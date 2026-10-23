@@ -1,0 +1,282 @@
+[
+ {
+  "letters": "אמת",
+  "official_name": "מפלגת העבודה בראשות מרב מיכאלי",
+  "short_name": "העבודה",
+  "leader": "מרב מיכאלי",
+  "status": "approved"
+ },
+ {
+  "letters": "אצ",
+  "official_name": "חופש כלכלי בראשות אביר קארה",
+  "short_name": "חופש כלכלי",
+  "leader": "אביר קארה",
+  "status": "approved"
+ },
+ {
+  "letters": "ב",
+  "official_name": "הבית היהודי בראשות איילת שקד",
+  "short_name": "הבית היהודי",
+  "leader": "איילת שקד",
+  "status": "approved"
+ },
+ {
+  "letters": "ג",
+  "official_name": "יהדות התורה והשבת אגודת ישראל – דגל התורה",
+  "short_name": "יהדות התורה",
+  "leader": "משה גפני",
+  "status": "approved"
+ },
+ {
+  "letters": "ד",
+  "official_name": "בל\"ד - אלתג'מוע אלווטני אלדמוקרטי בראשות סמי אבו שחאדה",
+  "short_name": "בל\"ד",
+  "leader": "סמי אבו שחאדה",
+  "status": "approved"
+ },
+ {
+  "letters": "ום",
+  "official_name": "חד\"ש תע\"ל בראשות איימן עודה ואחמד טיבי",
+  "short_name": "חד\"ש-תע\"ל",
+  "leader": "איימן עודה",
+  "status": "approved"
+ },
+ {
+  "letters": "ז",
+  "official_name": "שחר כוח חברתי בראשות וג'די טאהר",
+  "short_name": "שחר",
+  "leader": "וג'די טאהר",
+  "status": "approved"
+ },
+ {
+  "letters": "זך",
+  "official_name": "קמ\"ה – קידום מעמד הפרט",
+  "short_name": "קמ\"ה",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "זנ",
+  "official_name": "כח להשפיע בראשות בני אלבז",
+  "short_name": "כח להשפיע",
+  "leader": "בני אלבז",
+  "status": "approved"
+ },
+ {
+  "letters": "זץ",
+  "official_name": "צומת בראשות משה גרין דרכו של רפול",
+  "short_name": "צומת",
+  "leader": "משה גרין",
+  "status": "approved"
+ },
+ {
+  "letters": "ט",
+  "official_name": "הציונות הדתית בראשות בצלאל סמוטריץ' ועוצמה יהודית בראשות איתמר בן גביר",
+  "short_name": "הציונות הדתית",
+  "leader": "בצלאל סמוטריץ'",
+  "status": "approved"
+ },
+ {
+  "letters": "י",
+  "official_name": "ישראל חופשית דמוקרטית בראשות אלי אבידר",
+  "short_name": "ישראל חופשית דמוקרטית",
+  "leader": "אלי אבידר",
+  "status": "approved"
+ },
+ {
+  "letters": "יז",
+  "official_name": "הכלכלית החדשה בראשות פרופסור ירון זליכה",
+  "short_name": "הכלכלית החדשה",
+  "leader": "ירון זליכה",
+  "status": "approved"
+ },
+ {
+  "letters": "ינ",
+  "official_name": "איחוד בני הברית – בראשות רב חובל בשארה שליאן",
+  "short_name": "איחוד בני הברית",
+  "leader": "בשארה שליאן",
+  "status": "approved"
+ },
+ {
+  "letters": "יק",
+  "official_name": "מפלגת הגוש התנ\"כי",
+  "short_name": "הגוש התנ\"כי",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "יץ",
+  "official_name": "צו השעה",
+  "short_name": "צו השעה",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "כן",
+  "official_name": "המחנה הממלכתי בהנהגת בני גנץ לראשות הממשלה",
+  "short_name": "המחנה הממלכתי",
+  "leader": "בני גנץ",
+  "status": "approved"
+ },
+ {
+  "letters": "ך",
+  "official_name": "אני ואתה",
+  "short_name": "אני ואתה",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "ל",
+  "official_name": "ישראל ביתנו בראשות אביגדור ליברמן",
+  "short_name": "ישראל ביתנו",
+  "leader": "אביגדור ליברמן",
+  "status": "approved"
+ },
+ {
+  "letters": "מחל",
+  "official_name": "הליכוד בהנהגת בנימין נתניהו לראשות הממשלה",
+  "short_name": "הליכוד",
+  "leader": "בנימין נתניהו",
+  "status": "approved"
+ },
+ {
+  "letters": "מרצ",
+  "official_name": "מרצ השמאל של ישראל בראשות זהבה גלאון",
+  "short_name": "מרצ",
+  "leader": "זהבה גלאון",
+  "status": "approved"
+ },
+ {
+  "letters": "נז",
+  "official_name": "כבוד האדם, בראשות עו\"ד ארקדי פוגץ'",
+  "short_name": "כבוד האדם",
+  "leader": "ארקדי פוגץ'",
+  "status": "approved"
+ },
+ {
+  "letters": "ני",
+  "official_name": "נתיב – נחיה תמיד יחד בכבוד",
+  "short_name": "נתיב",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "נף",
+  "official_name": "מפלגת שמע בראשות נפתלי גולדמן",
+  "short_name": "שמע",
+  "leader": "נפתלי גולדמן",
+  "status": "approved"
+ },
+ {
+  "letters": "נץ",
+  "official_name": "העצמאים החדשים בראשות יורם מועלמי",
+  "short_name": "העצמאים החדשים",
+  "leader": "יורם מועלמי",
+  "status": "approved"
+ },
+ {
+  "letters": "נק",
+  "official_name": "יש כיוון בראשות עמוס דב סילבר",
+  "short_name": "יש כיוון",
+  "leader": "עמוס דב סילבר",
+  "status": "approved"
+ },
+ {
+  "letters": "נר",
+  "official_name": "\"אנחנו\" - בראשות עו\"ד מוש חוג'ה",
+  "short_name": "אנחנו",
+  "leader": "מוש חוג'ה",
+  "status": "approved"
+ },
+ {
+  "letters": "עם",
+  "official_name": "הרשימה הערבית המאוחדת",
+  "short_name": "רע\"ם",
+  "leader": "מנסור עבאס",
+  "status": "approved"
+ },
+ {
+  "letters": "פה",
+  "official_name": "יש עתיד בראשות יאיר לפיד לראשות הממשלה",
+  "short_name": "יש עתיד",
+  "leader": "יאיר לפיד",
+  "status": "approved"
+ },
+ {
+  "letters": "ף",
+  "official_name": "הפיראטים - הכי טוב לדעתי אני רוצה להיות שם",
+  "short_name": "הפיראטים",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "צ",
+  "official_name": "צעירים בוערים בהנהגת הדר מוכתר",
+  "short_name": "צעירים בוערים",
+  "leader": "הדר מוכתר",
+  "status": "approved"
+ },
+ {
+  "letters": "ץ",
+  "official_name": "מנהיגות חברתית",
+  "short_name": "מנהיגות חברתית",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "ק",
+  "official_name": "קול הסביבה והחי",
+  "short_name": "קול הסביבה והחי",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "קי",
+  "official_name": "הלב היהודי בראשות אלי יוסף",
+  "short_name": "הלב היהודי",
+  "leader": "אלי יוסף",
+  "status": "approved"
+ },
+ {
+  "letters": "קך",
+  "official_name": "סדר חדש - למען האזרחים הוותיקים בישראל",
+  "short_name": "סדר חדש",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "קנ",
+  "official_name": "כל קול קובע נועם קולמן ולירון עופרי לראשות הממשלה",
+  "short_name": "כל קול קובע",
+  "leader": "נועם קולמן",
+  "status": "approved"
+ },
+ {
+  "letters": "קץ",
+  "official_name": "באומץ בשבילך",
+  "short_name": "באומץ בשבילך",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "רז",
+  "official_name": "רשימת שלושים/ארבעים בראשות סטלה ויינשטיין",
+  "short_name": "שלושים/ארבעים",
+  "leader": "סטלה ויינשטיין",
+  "status": "approved"
+ },
+ {
+  "letters": "שס",
+  "official_name": "התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצ\"ל",
+  "short_name": "ש\"ס",
+  "leader": "אריה דרעי",
+  "status": "approved"
+ },
+ {
+  "letters": "ת",
+  "official_name": "דעת טוב ורע וברית שבט אברהם-עלה ירוק ואוסרת אל איסלמיה",
+  "short_name": "דעת טוב ורע",
+  "leader": null,
+  "status": "approved"
+ }
+]

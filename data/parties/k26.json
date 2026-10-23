@@ -1,0 +1,268 @@
+[
+ {
+  "letters": "אמת",
+  "official_name": "הדמוקרטים בראשות יאיר גולן",
+  "short_name": "הדמוקרטים",
+  "leader": "יאיר גולן",
+  "status": "approved"
+ },
+ {
+  "letters": "ב",
+  "official_name": "עוצמה יהודית בראשות איתמר בן גביר",
+  "short_name": "עוצמה יהודית",
+  "leader": "איתמר בן גביר",
+  "status": "approved"
+ },
+ {
+  "letters": "בד",
+  "official_name": "מפלגת ביחד נצליח – רשימה משותפת ערבית יהודית בראשות אבי שקד",
+  "short_name": "ביחד נצליח",
+  "leader": "אבי שקד",
+  "status": "approved"
+ },
+ {
+  "letters": "בי",
+  "official_name": "צומת בית ישראל",
+  "short_name": "צומת",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "בקר",
+  "official_name": "אורות השחר בראשות ניסים לוק",
+  "short_name": "אורות השחר",
+  "leader": "ניסים לוק",
+  "status": "approved"
+ },
+ {
+  "letters": "ג",
+  "official_name": "יהדות התורה והשבת אגודת ישראל – דגל התורה",
+  "short_name": "יהדות התורה",
+  "leader": "משה גפני",
+  "status": "approved"
+ },
+ {
+  "letters": "ד",
+  "official_name": "השותפות לכולם",
+  "short_name": "השותפות לכולם",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "די",
+  "official_name": "המילואימניקים והכלכלית בראשות יועז הנדל וירון זליכה",
+  "short_name": "המילואימניקים והכלכלית",
+  "leader": "יועז הנדל",
+  "status": "approved"
+ },
+ {
+  "letters": "דרך",
+  "official_name": "ישר! עם איזנקוט לראשות הממשלה מאחדים את ישראל",
+  "short_name": "ישר!",
+  "leader": "גדי איזנקוט",
+  "status": "approved"
+ },
+ {
+  "letters": "ה",
+  "official_name": "גן עדן בראשות ישוע ישראל בן דוד",
+  "short_name": "גן עדן",
+  "leader": "ישוע ישראל בן דוד",
+  "status": "approved"
+ },
+ {
+  "letters": "ודם",
+  "official_name": "הרשימה המשותפת",
+  "short_name": "הרשימה המשותפת",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "ז",
+  "official_name": "בטח – בטחון חברתי בראשות סמיון גרפמן",
+  "short_name": "בטח",
+  "leader": "סמיון גרפמן",
+  "status": "approved"
+ },
+ {
+  "letters": "זך",
+  "official_name": "הציבור החרדי בראשות מוטי ליטנר",
+  "short_name": "הציבור החרדי",
+  "leader": "מוטי ליטנר",
+  "status": "approved"
+ },
+ {
+  "letters": "זץ",
+  "official_name": "ברית עולם לגאולת ישראל",
+  "short_name": "ברית עולם",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "ט",
+  "official_name": "הציונות הדתית בראשות בצלאל סמוטריץ' וזהות בראשות משה פייגלין",
+  "short_name": "הציונות הדתית וזהות",
+  "leader": "בצלאל סמוטריץ'",
+  "status": "approved"
+ },
+ {
+  "letters": "י",
+  "official_name": "ישראל תחילה בראשות שרן השכל",
+  "short_name": "ישראל תחילה",
+  "leader": "שרן השכל",
+  "status": "approved"
+ },
+ {
+  "letters": "יק",
+  "official_name": "גה\"ת – גוש התנ\"כי",
+  "short_name": "גה\"ת",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "ך",
+  "official_name": "עמך ישראל בראשות עופר וינטר",
+  "short_name": "עמך ישראל",
+  "leader": "עופר וינטר",
+  "status": "approved"
+ },
+ {
+  "letters": "כן",
+  "official_name": "כחול לבן בראשות בני גנץ",
+  "short_name": "כחול לבן",
+  "leader": "בני גנץ",
+  "status": "withdrawn"
+ },
+ {
+  "letters": "ל",
+  "official_name": "ישראל ביתנו בראשות אביגדור ליברמן",
+  "short_name": "ישראל ביתנו",
+  "leader": "אביגדור ליברמן",
+  "status": "approved"
+ },
+ {
+  "letters": "מחל",
+  "official_name": "הליכוד בהנהגת בנימין נתניהו לראשות הממשלה",
+  "short_name": "הליכוד",
+  "leader": "בנימין נתניהו",
+  "status": "approved"
+ },
+ {
+  "letters": "ני",
+  "official_name": "נעם לישראל למען עתיד הילדים בראשות אבי מעוז",
+  "short_name": "נעם",
+  "leader": "אבי מעוז",
+  "status": "approved"
+ },
+ {
+  "letters": "נף",
+  "official_name": "שמע בראשות נפתלי גולדמן",
+  "short_name": "שמע",
+  "leader": "נפתלי גולדמן",
+  "status": "approved"
+ },
+ {
+  "letters": "נץ",
+  "official_name": "ביטחון אישי",
+  "short_name": "ביטחון אישי",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "נקי",
+  "official_name": "התיקון לשיטת הבחירות והממשל",
+  "short_name": "התיקון לשיטת הבחירות",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "נר",
+  "official_name": "צבע שחור – מגן עולם התורה",
+  "short_name": "צבע שחור",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "עם",
+  "official_name": "רע\"ם – הרשימה הערבית המאוחדת",
+  "short_name": "רע\"ם",
+  "leader": "מנסור עבאס",
+  "status": "approved"
+ },
+ {
+  "letters": "פה",
+  "official_name": "אני ואתה מפלגת העם הישראלית",
+  "short_name": "אני ואתה",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "צבי",
+  "official_name": "תנועת אחי תנועתו של הרב יורם אברג'ל זצ\"ל",
+  "short_name": "תנועת אחי",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "צדק",
+  "official_name": "שרשר לאהבה ואחדות העם",
+  "short_name": "שרשר",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "צף",
+  "official_name": "הפיראטים – צפים לטוב",
+  "short_name": "הפיראטים",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "ק",
+  "official_name": "תקומה",
+  "short_name": "תקומה",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "קה",
+  "official_name": "קול הנשים",
+  "short_name": "קול הנשים",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "קך",
+  "official_name": "סדר-חדש לכינון חוקה, להפרדת רשויות ולבחירות אישיות",
+  "short_name": "סדר חדש",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "קץ",
+  "official_name": "משפט צדק",
+  "short_name": "משפט צדק",
+  "leader": null,
+  "status": "approved"
+ },
+ {
+  "letters": "רץ",
+  "official_name": "הקהל – מפלגה כלל חרדית שנציגיה נבחרים על ידי הציבור בראשות הרב שלמה אלבוים",
+  "short_name": "הקהל",
+  "leader": "שלמה אלבוים",
+  "status": "approved"
+ },
+ {
+  "letters": "רק",
+  "official_name": "ביחד בראשות נפתלי בנט",
+  "short_name": "ביחד",
+  "leader": "נפתלי בנט",
+  "status": "approved"
+ },
+ {
+  "letters": "שס",
+  "official_name": "התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצ\"ל",
+  "short_name": "ש\"ס",
+  "leader": "אריה דרעי",
+  "status": "approved"
+ }
+]

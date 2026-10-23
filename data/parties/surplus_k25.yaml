@@ -1,0 +1,10 @@
+# Surplus-vote agreements (הסכמי עודפים), 25th Knesset.
+# Source: ילקוט הפרסומים 10861, עמ' 414, 24.10.2022
+# https://www.gov.il/BlobFolder/guide/candidates-lists-25/he/candidates_agreements_yalkut10861_knesset25.pdf
+# (copy in data/raw/parties/)
+agreements:
+  - [שס, ג]
+  - [אמת, מרצ]
+  - [מחל, ט]
+  - [כן, פה]
+  - [נק, ף]

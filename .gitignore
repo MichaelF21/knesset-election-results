@@ -8,5 +8,4 @@ site/test-results/
 site/playwright-report/
 data/raw/geo/*
 !data/raw/geo/README.md
-data/raw/parties/
 site/public/data/mock/

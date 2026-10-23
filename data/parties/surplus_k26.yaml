@@ -1,0 +1,10 @@
+# Surplus-vote agreements (הסכמי עודפים), 26th Knesset.
+# Source: ילקוט הפרסומים 15045, עמ' 1098, 19.10.2026
+# https://www.gov.il/BlobFolder/guide/candidates-lists-26/he/yp15045.pdf  (copy in data/raw/parties/)
+agreements:
+  - [רק, ל]
+  - [ודם, עם]
+  - [ט, מחל]
+  - [ג, שס]
+  - [אמת, דרך]
+  - [זץ, נקי]
