@@ -90,9 +90,14 @@ def load_stations(path: Path | str, election: int | None = None) -> pd.DataFrame
     return df
 
 
-def station_sum_mismatches(localities: pd.DataFrame, stations: pd.DataFrame) -> pd.DataFrame:
-    """Rows where the station totals do not equal the locality row. Empty when consistent."""
-    cols = [ELIGIBLE, VOTERS, INVALID, VALID] + party_columns(localities)
+def station_sum_mismatches(localities: pd.DataFrame, stations: pd.DataFrame,
+                           votes_only: bool = False) -> pd.DataFrame:
+    """Rows where the station totals do not equal the locality row. Empty when consistent.
+
+    votes_only skips eligible voters (בזב): partial files may list a locality's full eligible count
+    while only its counted stations appear in the station file.
+    """
+    cols = ([] if votes_only else [ELIGIBLE]) + [VOTERS, INVALID, VALID] + party_columns(localities)
     summed = stations.groupby(CODE)[cols].sum()
     loc = localities.set_index(CODE)[cols]
     summed = summed.reindex(loc.index, fill_value=0)

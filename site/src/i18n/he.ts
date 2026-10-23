@@ -151,6 +151,9 @@ export const he = {
     dark: 'מצב כהה',
   },
   toDetails: (name: string) => `${name} — לפרטים המלאים`,
+  refresh: {
+    updated: (time: string) => `התוצאות עודכנו (${time})`,
+  },
   tooltip: {
     top3: 'שלוש המובילות',
   },

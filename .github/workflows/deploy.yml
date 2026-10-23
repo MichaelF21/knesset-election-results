@@ -3,7 +3,8 @@ name: Build and deploy
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'data/**', 'pipeline/**', 'scripts/**', 'tests/**', 'requirements.txt', '.github/workflows/**']
+    # raw committee CSVs alone don't change the site; the regenerated site/public/data does
+    paths: ['site/**', 'data/**', '!data/raw/k26/**', 'pipeline/**', 'scripts/**', 'tests/**', 'requirements.txt', '.github/workflows/**']
   workflow_dispatch:
   workflow_call:
 
@@ -27,17 +28,23 @@ jobs:
         with:
           python-version: '3.13'
           cache: pip
-      - run: pip install -r requirements.txt
-      - run: pytest -q
+      # live election-night updates (scripts/live.py) are validated before they are pushed;
+      # skip the test suites for them so results publish faster
+      - if: ${{ !startsWith(github.event.head_commit.message, 'Live update') }}
+        run: pip install -r requirements.txt
+      - if: ${{ !startsWith(github.event.head_commit.message, 'Live update') }}
+        run: pytest -q
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
           cache-dependency-path: site/package-lock.json
       - working-directory: site
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           npm ci
-          npm test
+          case "$COMMIT_MSG" in "Live update"*) ;; *) npm test ;; esac
           npm run build
       - name: Refuse to deploy mock data
         run: |

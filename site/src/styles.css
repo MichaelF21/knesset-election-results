@@ -277,6 +277,14 @@ button, input, select { font: inherit; color: inherit; }
 .maplibregl-ctrl-group button + button { border-top-color: var(--ctrl-line); }
 .maplibregl-ctrl-icon { filter: var(--ctrl-icon-filter); }
 
+/* Live-update notice */
+.toast:empty { display: none; }
+.toast {
+  position: fixed; z-index: 30; inset-block-end: 16px; inset-inline-start: 50%; transform: translateX(50%);
+  background: var(--ink); color: var(--on-ink); border-radius: 999px; padding-block: 8px; padding-inline: 16px;
+  font-weight: 700; box-shadow: 0 6px 20px var(--shadow);
+}
+
 /* Theme toggle */
 .theme-toggle {
   margin-inline-start: auto; display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line);

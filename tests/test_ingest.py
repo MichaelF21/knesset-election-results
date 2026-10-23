@@ -91,3 +91,42 @@ def test_idempotent(out):
     a = (out / "results/k25/localities.json").read_bytes()
     ingest.run(25, out=out, fetch_areas=False)
     assert (out / "results/k25/localities.json").read_bytes() == a
+
+
+def test_partial_files_with_only_counted_rows(out, tmp_path):
+    """The committee's partial files may list only counted stations and localities, with full
+    eligible-voter counts per locality. That must ingest (no sum failure), add the missing localities
+    as not counted, and report a sane counted share."""
+    lp, sp = _mock(40, tmp_path)
+    st = pd.read_csv(sp, encoding="utf-8-sig")
+    loc = pd.read_csv(lp, encoding="utf-8-sig")
+    (tmp_path / "in").mkdir()
+    st[st["מצביעים"] > 0].to_csv(tmp_path / "in/expb.csv", index=False, encoding="utf-8-sig")
+    # locality rows keep the full eligible count even though only counted stations are listed
+    loc[loc["מצביעים"] > 0].to_csv(tmp_path / "in/expc.csv", index=False, encoding="utf-8-sig")
+    r = ingest.run(26, tmp_path / "in/expc.csv", tmp_path / "in/expb.csv", final=False, out=out, fetch_areas=False)
+    assert any("not in the file yet" in w for w in r["warnings"])
+    res = json.loads((out / "results/k26/localities.json").read_text(encoding="utf-8"))
+    assert len(res) == 1215 and sum(not u["counted"] for u in res.values()) > 0
+    e = json.loads((out / "meta.json").read_text(encoding="utf-8"))["elections"]["26"]
+    assert 35 < e["counted_pct"] < 50 and e["counted_source"] == "files"
+
+
+def test_partial_station_mismatch_warns_final_fails(out, tmp_path):
+    lp, sp = _mock(40, tmp_path)
+    st = pd.read_csv(sp, encoding="utf-8-sig")
+    i = st.index[st["מצביעים"] > 0][0]
+    st.loc[i, ["מחל", "כשרים", "מצביעים"]] += 1  # stations file fetched a moment later
+    st.to_csv(tmp_path / "expb.csv", index=False, encoding="utf-8-sig")
+    r = ingest.run(26, lp, tmp_path / "expb.csv", final=False, out=out, fetch_areas=False)
+    assert any("station sums differ" in w for w in r["warnings"])
+    with pytest.raises(ingest.IngestError, match="station sums"):
+        ingest.run(26, lp, tmp_path / "expb.csv", final=True, out=out, fetch_areas=False)
+
+
+def test_counted_share_prefers_govmap_totals():
+    loc = pd.DataFrame({L.ELIGIBLE: [100, 100], L.VOTERS: [50, 0]})
+    pct, src = ingest.counted_share(loc, None, {"totals": {"kalpi": 200, "kalpi_counted": 50}}, 0)
+    assert (round(pct), src) == (25, "govmap")
+    pct, src = ingest.counted_share(loc, None, None, 400)  # floor: previous election's eligible
+    assert (round(pct), src) == (25, "files")

@@ -5,10 +5,19 @@ import type { ElectionKey, Meta, PartiesFile, Results, Unit } from './types';
 
 const BASE = `${import.meta.env.BASE_URL}data/`;
 
-async function json<T>(path: string): Promise<T | null> {
-  const r = await fetch(BASE + path, { cache: 'no-cache' });
+// GitHub Pages lets browsers and its CDN cache files for 10 minutes. Results files carry the data
+// version (meta.generated) in the URL, so a new ingest is fetched at once; meta.json itself gets a
+// fresh URL on every check.
+async function json<T>(path: string, version?: string): Promise<T | null> {
+  const url = BASE + path + (version ? `?v=${encodeURIComponent(version)}` : '');
+  const r = await fetch(url, { cache: 'no-cache' });
   if (!r.ok) return null;
   return (await r.json()) as T;
+}
+
+/** The current meta.json, bypassing every cache. */
+export function fetchMeta(): Promise<Meta | null> {
+  return json<Meta>('meta.json', String(Date.now()));
 }
 
 export interface Core {
@@ -17,27 +26,35 @@ export interface Core {
   results: Record<ElectionKey, Results | null>;
 }
 
-async function loadResults(e: ElectionKey): Promise<Results | null> {
+async function loadResults(e: ElectionKey, v: string): Promise<Results | null> {
   const [nat, munis, locs] = await Promise.all([
-    json<{ national: Unit; external: Unit | null; seats: Record<string, number> }>(`results/k${e}/national.json`),
-    json<Record<string, Unit>>(`results/k${e}/municipalities.json`),
-    json<Record<string, Unit>>(`results/k${e}/localities.json`),
+    json<{ national: Unit; external: Unit | null; seats: Record<string, number> }>(`results/k${e}/national.json`, v),
+    json<Record<string, Unit>>(`results/k${e}/municipalities.json`, v),
+    json<Record<string, Unit>>(`results/k${e}/localities.json`, v),
   ]);
   if (!nat || !munis || !locs) return null;
   return { ...nat, municipalities: munis, localities: locs, areas: null };
 }
 
-export async function loadCore(): Promise<Core> {
-  const [meta, parties] = await Promise.all([json<Meta>('meta.json'), json<PartiesFile>('parties.json')]);
-  if (!meta || !parties) throw new Error('missing meta.json / parties.json');
+/** All results for a meta.json version (pass the meta already fetched to avoid a second request). */
+export async function loadCore(known?: Meta): Promise<Core> {
+  const meta = known ?? (await fetchMeta());
+  if (!meta) throw new Error('missing meta.json');
+  const v = meta.generated;
+  const parties = await json<PartiesFile>('parties.json', v);
+  if (!parties) throw new Error('missing parties.json');
   const has26 = meta.elections['26']?.status !== 'not_published';
-  const [k25, k26] = await Promise.all([loadResults('25'), has26 ? loadResults('26') : Promise.resolve(null)]);
+  const [k25, k26] = await Promise.all([loadResults('25', v), has26 ? loadResults('26', v) : Promise.resolve(null)]);
   return { meta, parties, results: { '25': k25, '26': k26 } };
 }
 
-const areaCache: Partial<Record<ElectionKey, Promise<Record<string, Unit> | null>>> = {};
-export function loadAreaResults(e: ElectionKey): Promise<Record<string, Unit> | null> {
-  return (areaCache[e] ??= json<Record<string, Unit>>(`results/k${e}/areas.json`));
+// 2022 neighborhood results never change; 2026 ones are cached per data version.
+const areaCache = new Map<string, Promise<Record<string, Unit> | null>>();
+export function loadAreaResults(e: ElectionKey, version?: string): Promise<Record<string, Unit> | null> {
+  const v = e === '25' ? undefined : version;
+  const key = `${e}|${v ?? ''}`;
+  if (!areaCache.has(key)) areaCache.set(key, json<Record<string, Unit>>(`results/k${e}/areas.json`, v));
+  return areaCache.get(key)!;
 }
 
 export type FC = FeatureCollection<Geometry, { id: string; [k: string]: unknown }>;

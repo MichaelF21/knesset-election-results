@@ -11,5 +11,8 @@ Static Hebrew (RTL) site for 25th vs 26th Knesset results. Full spec: `PLAN.md`.
 - Use CSS logical properties (`margin-inline-start`), not left/right.
 - `data/raw/k25/*.csv` are the committee's files: never modify them.
 - Mock 2026 data (`scripts/mock_k26.py`) is only built with `MOCK=1` and must never be deployed.
+- Election night: `python scripts/live.py` polls the committee, ingests and pushes (`--final` at the end);
+  `python scripts/rehearse.py` rehearses it locally with staged mock files. Never run live.py with real
+  pushes from a branch other than `main`.
 - Commands: `python scripts/ingest.py --election 25` (pipeline), `pytest` (pipeline tests),
   `cd site && npm test` (vitest), `npm run e2e` (Playwright), `npm run build`.

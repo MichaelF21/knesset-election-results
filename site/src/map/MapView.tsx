@@ -83,6 +83,16 @@ function bbox(features: FC['features']): [number, number, number, number] | null
   return x0 === Infinity ? null : [x0, y0, x1, y1];
 }
 
+/** Neighborhood results are loaded lazily; attach them to (a possibly refreshed) model. */
+async function attachAreaResults(m: Model): Promise<void> {
+  const [a25, a26] = await Promise.all([
+    loadAreaResults('25'),
+    m.r26 && m.meta.elections['26'].has_areas ? loadAreaResults('26', m.meta.generated) : Promise.resolve(null),
+  ]);
+  m.r25.areas = a25;
+  if (m.r26) m.r26.areas = a26;
+}
+
 function applyTheme(map: maplibregl.Map, theme: Theme): void {
   const c = MAP_COLORS[theme];
   map.setPaintProperty('bg', 'background-color', c.bg);
@@ -291,12 +301,7 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
       if (!cities.length) return;
       cities.forEach((c) => loadingCities.current.add(c));
       const m = latest.current.model;
-      const [a25, a26] = await Promise.all([
-        loadAreaResults('25'),
-        m.r26 && m.meta.elections['26'].has_areas ? loadAreaResults('26') : Promise.resolve(null),
-      ]);
-      m.r25.areas = a25;
-      if (m.r26) m.r26.areas = a26;
+      await attachAreaResults(m);
       const geos = await Promise.all(cities.map((c) => loadAreaGeo(c)));
       cities.forEach((c, i) => areaFeatures.current.set(c, geos[i]?.features ?? []));
       latest.current.onAreasLoaded();
@@ -348,6 +353,16 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
     if (!map || !ready) return;
     map.setLayoutProperty('outline', 'visibility', outline ? 'visible' : 'none');
   }, [ready, outline]);
+
+  // New results arrived (live refresh): neighborhoods already on screen need the new numbers too.
+  useEffect(() => {
+    if (areaFeatures.current.size === 0 || model.r25.areas) return;
+    let live = true;
+    attachAreaResults(model).then(() => live && onAreasLoaded());
+    return () => {
+      live = false;
+    };
+  }, [model, onAreasLoaded]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -1,12 +1,10 @@
 name: Ingest 26th Knesset results
 
-# Runs when new committee CSVs are committed to data/raw/k26/ (or by hand), commits the
-# regenerated site/public/data, then deploys. Results are "partial" until data/raw/k26/FINAL exists
-# or the manual run sets final=true.
+# Election-night BACKUP for scripts/live.py (which runs on a computer and pushes every update).
+# Run it by hand from the Actions tab (works from a phone): downloads the committee CSVs, ingests,
+# commits the regenerated site/public/data, then deploys. Don't run it while live.py is running.
+# Results are "partial" unless data/raw/k26/FINAL exists or final=true.
 on:
-  push:
-    branches: [main]
-    paths: ['data/raw/k26/*.csv', 'data/raw/k26/FINAL']
   workflow_dispatch:
     inputs:
       final:
@@ -14,9 +12,9 @@ on:
         type: boolean
         default: false
       download:
-        description: Download the CSVs from the committee instead of using the committed ones
+        description: Download the CSVs from the committee (uncheck to use the committed ones)
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: write
@@ -50,6 +48,7 @@ jobs:
           git config user.email "election-ingest@users.noreply.github.com"
           git add site/public/data data/raw/govmap data/raw/k26
           git diff --cached --quiet || git commit -m "Ingest 26th Knesset results ($(date -u +%H:%M) UTC)"
+          git pull --rebase -X theirs
           git push
 
   deploy:

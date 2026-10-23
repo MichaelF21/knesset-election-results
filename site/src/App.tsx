@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controls } from './components/Controls';
 import { Header } from './components/Header';
 import { Legend } from './components/Legend';
@@ -6,7 +6,8 @@ import { SearchBox } from './components/SearchBox';
 import { SidePanel } from './components/SidePanel';
 import { UnitTable } from './components/UnitTable';
 import { he } from './i18n/he';
-import { loadCore, loadGeo, type Geo } from './lib/data';
+import { fetchMeta, loadCore, loadGeo, type Geo } from './lib/data';
+import { fmtTime } from './lib/format';
 import { buildModel, type Model } from './lib/model';
 import { unitRows } from './lib/rows';
 import { useTheme } from './lib/theme';
@@ -40,6 +41,10 @@ export function App() {
   const [outline, setOutline] = useState(false);
   const [areasVersion, setAreasVersion] = useState(0);
   const [theme, setTheme] = useTheme();
+  const [toast, setToast] = useState<string | null>(null);
+  // the visitor chose a tab: a live refresh must not switch it for them
+  const pickedView = useRef(Boolean(init.view));
+  const onAreasLoaded = useCallback(() => setAreasVersion((v) => v + 1), []);
 
   useEffect(() => {
     Promise.all([loadCore(), loadGeo()])
@@ -55,6 +60,47 @@ export function App() {
         setError(true);
       });
   }, [init.view]);
+
+  // Live updates: while 2026 results are not final, check meta.json and swap in new results in place.
+  useEffect(() => {
+    if (!model) return;
+    const status = model.meta.elections['26']?.status;
+    if (status === 'final') return;
+    let busy = false;
+    const check = async () => {
+      if (busy || document.hidden) return;
+      busy = true;
+      try {
+        const meta = await fetchMeta();
+        if (!meta || meta.generated === model.meta.generated) return;
+        const core = await loadCore(meta);
+        if (!core.results['25']) return;
+        const m = buildModel(core.meta, core.parties, core.results['25'], core.results['26']);
+        setModel(m);
+        if (!model.r26 && m.r26 && !pickedView.current) setView('compare');
+        setToast(he.refresh.updated(fmtTime(meta.elections['26']?.updated ?? meta.generated)));
+      } catch {
+        /* offline or mid-deploy: try again on the next tick */
+      } finally {
+        busy = false;
+      }
+    };
+    // ?poll=<seconds> overrides the interval (rehearsals and tests)
+    const custom = Number(new URLSearchParams(location.search).get('poll')) * 1000;
+    const id = window.setInterval(check, custom || (status === 'partial' ? 60_000 : 120_000));
+    const onVisible = () => !document.hidden && check();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [model]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [toast]);
 
   const canCompare = Boolean(model?.r26);
   useEffect(() => {
@@ -76,6 +122,7 @@ export function App() {
     if ((m === 'partySwing' || m === 'blocSwing') && view !== 'compare') setView('compare');
   };
   const onView = (v: View) => {
+    pickedView.current = true;
     setView(v);
     if (v !== 'compare' && (mode === 'partySwing' || mode === 'blocSwing')) setMode('winner');
   };
@@ -144,7 +191,7 @@ export function App() {
                     selection={selection}
                     onSelect={setSelection}
                     areasVersion={areasVersion}
-                    onAreasLoaded={() => setAreasVersion((v) => v + 1)}
+                    onAreasLoaded={onAreasLoaded}
                   />
                   <Legend model={model} view={view} mode={mode} theme={theme} />
                   {selection && selection.level !== 'national' && (
@@ -167,6 +214,9 @@ export function App() {
           )}
         </section>
       </main>
+      <div className="toast" role="status" aria-live="polite">
+        {toast}
+      </div>
       <footer className="site-footer">
         <p>{he.footer.sources}</p>
         <p>{he.footer.lineage}</p>

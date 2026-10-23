@@ -135,7 +135,9 @@ def build(seed: int, counted: float) -> tuple[Path, Path]:
                           **{k: int(v) for k, v in v26.loc[aid].items()}}
     GOVMAP_OUT.mkdir(parents=True, exist_ok=True)
     (GOVMAP_OUT / "neighborhood_data.json").write_text(
-        json.dumps({"version": 2, "parties": K26, "features": out_feats}, ensure_ascii=False), encoding="utf-8")
+        json.dumps({"version": 2, "parties": K26, "features": out_feats,
+                    "totals": {"kalpi": int(len(st)), "kalpi_counted": int((st[L.VOTERS] > 0).sum()),
+                               "votes_counted": int(st[L.VALID].sum())}}, ensure_ascii=False), encoding="utf-8")
     return lp, sp
 
 

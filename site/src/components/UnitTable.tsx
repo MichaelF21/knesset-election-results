@@ -22,12 +22,17 @@ export function UnitTable({ model, view, mode, swingTarget, blocTarget, onSelect
   const [level, setLevel] = useState<Exclude<Level, 'national'>>('locality');
   const [sort, setSort] = useState<{ key: Key; dir: 1 | -1 }>({ key: 'valid', dir: -1 });
   const [areasReady, setAreasReady] = useState(Boolean(model.r25.areas));
+  // a live refresh brings a new model without neighborhood results: load them again if needed
+  useEffect(() => setAreasReady(Boolean(model.r25.areas)), [model]);
   const e = view === '25' ? '25' : '26';
   const showSwing = view === 'compare' && (mode === 'partySwing' || mode === 'blocSwing');
 
   useEffect(() => {
     if (level !== 'area' || areasReady) return;
-    Promise.all([loadAreaResults('25'), model.r26 && model.meta.elections['26'].has_areas ? loadAreaResults('26') : null]).then(([a, b]) => {
+    Promise.all([
+      loadAreaResults('25'),
+      model.r26 && model.meta.elections['26'].has_areas ? loadAreaResults('26', model.meta.generated) : null,
+    ]).then(([a, b]) => {
       model.r25.areas = a;
       if (model.r26) model.r26.areas = b;
       setAreasReady(true);

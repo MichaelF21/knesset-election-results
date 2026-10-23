@@ -17,6 +17,8 @@ import sys
 import time
 from pathlib import Path
 
+import pandas as pd
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from pipeline import aggregate as A  # noqa: E402
@@ -55,8 +57,12 @@ def download(url_base: str, election: int) -> tuple[Path, Path]:
     return out[0], out[1]
 
 
-def validate(election: int, loc, st, table) -> list[str]:
-    """Raise on errors that make the data unusable; return warnings."""
+def validate(election: int, loc, st, table, final: bool = True) -> list[str]:
+    """Raise on errors that make the data unusable; return warnings.
+
+    Partial results are checked more leniently: the two committee files are downloaded moments apart
+    and may disagree briefly, and eligible voters may be listed for stations not yet counted.
+    """
     letters = set(L.party_columns(loc))
     official = {r["letters"] for r in P.read_lists(election)}
     unknown = sorted(letters - official)
@@ -70,11 +76,18 @@ def validate(election: int, loc, st, table) -> list[str]:
     if st is not None:
         if set(L.party_columns(st)) != letters:
             raise IngestError("station and locality files have different party columns")
-        bad = L.station_sum_mismatches(loc, st)
+        bad = L.station_sum_mismatches(loc, st, votes_only=not final)
         if not bad.empty:
-            raise IngestError(f"station sums differ from locality rows for {len(bad)} localities: "
-                              f"{bad.index.tolist()[:10]}")
-    warnings = []
+            msg = (f"station sums differ from locality rows for {len(bad)} localities: "
+                   f"{bad.index.tolist()[:10]}")
+            if final:
+                raise IngestError(msg)
+            warnings_ = [msg + " (partial results: using the locality file)"]
+        else:
+            warnings_ = []
+    else:
+        warnings_ = []
+    warnings = warnings_
     missing = sorted(set(loc[L.CODE]) - set(table.index) - {L.EXTERNAL_CODE})
     if missing:
         warnings.append(f"{len(missing)} localities not in the CBS list (shown by CSV name, no map shape): "
@@ -82,13 +95,34 @@ def validate(election: int, loc, st, table) -> list[str]:
     return warnings
 
 
-def counted_share(loc, st) -> float:
-    """Share of eligible voters whose stations (or localities) have reported."""
+def counted_share(loc, st, govmap: dict | None, prev_eligible: int) -> tuple[float, str]:
+    """Percent counted, and where the figure came from.
+
+    GovMap publishes the committee's own "stations counted" totals; use them when present. Otherwise
+    use the share of eligible voters whose stations reported. If the files list only counted stations,
+    their eligible total is too small, so the previous election's eligible total is the floor.
+    """
+    t = (govmap or {}).get("totals") or {}
+    if t.get("kalpi"):
+        return float(t.get("kalpi_counted", 0) / t["kalpi"] * 100), "govmap"
     df = st if st is not None and len(st) else loc
-    total = df[L.ELIGIBLE].sum()
+    total = max(int(df[L.ELIGIBLE].sum()), int(loc[L.ELIGIBLE].sum()), prev_eligible)
     if not total:
-        return 0.0
-    return float(df.loc[df[L.VOTERS] > 0, L.ELIGIBLE].sum() / total * 100)
+        return 0.0, "files"
+    return float(df.loc[df[L.VOTERS] > 0, L.ELIGIBLE].sum() / total * 100), "files"
+
+
+def add_uncounted_localities(loc, prev):
+    """Partial files may leave out localities with nothing counted yet. Add them as zero rows so the
+    map shows "not counted yet" and councils know they are only partly counted."""
+    missing = sorted(set(prev[L.CODE]) - set(loc[L.CODE]))
+    if not missing:
+        return loc, 0
+    rows = prev[prev[L.CODE].isin(missing)][[L.COMMITTEE, L.NAME, L.CODE]].copy()
+    for c in loc.columns:
+        if c not in rows.columns:
+            rows[c] = 0
+    return pd.concat([loc, rows[loc.columns]], ignore_index=True), len(missing)
 
 
 def run(election: int, locality_csv=None, stations_csv=None, final: bool | None = None,
@@ -100,9 +134,13 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
     table = G.locality_table()
 
     loc, st = L.load_election(election, locality_csv, stations_csv)
-    warnings = validate(election, loc, st, table)
-
     is_final = final if final is not None else election == 25
+    warnings = validate(election, loc, st, table, final=is_final)
+    prev, _ = L.load_election(election - 1) if (L.DATA / "raw" / f"k{election - 1}").exists() else (None, None)
+    if not is_final and prev is not None:
+        loc, n_added = add_uncounted_localities(loc, prev)
+        if n_added:
+            warnings.append(f"{n_added} localities not in the file yet (shown as not counted)")
     if not is_final and st is not None:
         counted = st[st[L.VOTERS] > 0].groupby(L.CODE)[L.ELIGIBLE].sum()
         loc[A.ELIGIBLE_COUNTED] = loc[L.CODE].map(counted).fillna(0).astype("int64")
@@ -124,7 +162,9 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
         areas = A.areas_from_govmap(gm, S.area_meta())
 
     seats = allocate(nat["votes"], P.load_surplus(election))
-    pct = 100.0 if is_final else round(counted_share(loc, st), 1)
+    prev_eligible = int(prev[L.ELIGIBLE].sum()) if prev is not None else 0
+    pct, pct_source = (100.0, "final") if is_final else counted_share(loc, st, gm, prev_eligible)
+    pct = round(pct, 1)
 
     d = out / "results" / f"k{election}"
     shutil.rmtree(d, ignore_errors=True)
@@ -140,7 +180,7 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
         meta["elections"].setdefault(str(n), {**info, "status": "not_published"})
     meta["elections"][str(election)].update({
         "status": "final" if is_final else "partial", "counted_pct": pct, "updated": E.now(),
-        "has_areas": bool(areas), "mock": mock,
+        "has_areas": bool(areas), "mock": mock, "counted_source": pct_source,
     })
     meta["generated"] = E.now()
     meta["areas_index"] = E.read_json(E.PUBLIC / "geo" / "areas" / "index.json") or {}
