@@ -56,10 +56,8 @@ export function App() {
   const canCompare = Boolean(model?.r26);
   useEffect(() => {
     if (!model) return;
-    if (!canCompare && (view === 'compare' || mode === 'partySwing' || mode === 'blocSwing')) {
-      if (view === 'compare') setView('25');
-      if (mode !== 'winner' && mode !== 'turnout') setMode('winner');
-    }
+    // Without 2026 results the comparison view shows the not-published notice; swing modes reset.
+    if (!canCompare && (mode === 'partySwing' || mode === 'blocSwing')) setMode('winner');
   }, [model, canCompare, view, mode]);
 
   useEffect(() => {
@@ -110,7 +108,7 @@ export function App() {
           {notPublished ? (
             <div className="empty-state" role="status">
               <h2>{he.empty.title}</h2>
-              <p>{he.empty.body}</p>
+              <p>{view === 'compare' ? he.empty.compareBody : he.empty.body}</p>
               <button type="button" className="btn" onClick={() => onView('25')}>
                 {he.empty.show25}
               </button>

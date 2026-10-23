@@ -18,6 +18,19 @@ test('2022 results load and 2026 shows the not-published state', async ({ page }
   await expect(page.locator('.chip')).toHaveText('טרם פורסמו תוצאות');
   await page.getByRole('button', { name: 'הצג את תוצאות כנסת 25' }).click();
   await expect(page.locator('.map canvas')).toBeVisible();
+
+  // the comparison (swing) view shows the same notice instead of falling back to 2022
+  await page.getByRole('radio', { name: 'השוואה' }).click();
+  await expect(page.getByRole('radio', { name: 'השוואה' })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('heading', { name: 'טרם פורסמו תוצאות' })).toBeVisible();
+  await expect(page.locator('.empty-state')).toContainText('מפת התנודה');
+  await expect(page.locator('.chip')).toHaveText('טרם פורסמו תוצאות');
+});
+
+test('a shared comparison link opens on the notice', async ({ page }) => {
+  await page.goto('/#v=compare&m=partySwing&p=%D7%9E%D7%97%D7%9C');
+  await expect(page.getByRole('heading', { name: 'טרם פורסמו תוצאות' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'השוואה' })).toHaveAttribute('aria-checked', 'true');
 });
 
 test('search finds a locality despite hyphen and final-letter differences', async ({ page }) => {
