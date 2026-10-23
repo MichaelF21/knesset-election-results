@@ -12,6 +12,11 @@ import type { Theme } from '../lib/theme';
 // Zoom thresholds: municipalities → localities → neighborhoods.
 export const Z_LOCALITIES = 9;
 export const Z_AREAS = 11.5;
+// Locality dots: small localities (regional-council members, West Bank settlements, …) are invisible
+// as polygons at country zoom, so each gets a dot sized by its valid votes. Dots of localities that
+// also have a polygon fade out between these zooms; polygon-less localities keep their dot.
+const Z_DOTS_FADE: [number, number] = [11, 12];
+const dotRadius = (valid: number) => Math.min(7, Math.max(2.6, 2 + Math.sqrt(valid) / 30));
 const ISRAEL: [number, number, number, number] = [34.2, 29.45, 35.95, 33.35];
 
 // Map chrome per theme: background, borders between units, selection, hatching for "no data".
@@ -180,32 +185,63 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
         id: 'outline', type: 'line', source: 'locs', layout: { visibility: 'none' },
         paint: { 'line-color': '#55554f', 'line-width': 0.5, 'line-opacity': 0.5 },
       });
-      map.addLayer({
-        id: 'points', type: 'circle', source: 'points',
-        paint: {
-          'circle-color': ['case', ['get', 'nodata'], '#bdbdb8', ['get', 'fill']],
-          'circle-opacity': ['max', ['get', 'op'], 0.4],
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.5, 11, 6],
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 1,
-        },
-      });
+      // selection outlines sit under the dots, so a selected council doesn't hide its localities' dots
       for (const [layer, src] of [['sel-munis', 'munis'], ['sel-locs', 'locs'], ['sel-areas', 'areas']] as const) {
         map.addLayer({
           id: layer, type: 'line', source: src, filter: ['==', ['get', 'id'], '__none__'],
           paint: { 'line-color': '#111111', 'line-width': 2.5 },
         });
       }
+      const dotOpacity = (base: maplibregl.ExpressionSpecification): maplibregl.ExpressionSpecification => [
+        'interpolate', ['linear'], ['zoom'],
+        Z_DOTS_FADE[0], base,
+        Z_DOTS_FADE[1], ['case', ['get', 'poly'], 0, base],
+      ];
+      map.addLayer({
+        id: 'points', type: 'circle', source: 'points',
+        // small dots on top of large ones
+        layout: { 'circle-sort-key': ['-', 0, ['get', 'r']] },
+        paint: {
+          'circle-color': ['case', ['get', 'nodata'], '#bdbdb8', ['get', 'fill']],
+          // winner share still shows as strength, but a dot never gets too faint to find
+          'circle-opacity': dotOpacity(['max', ['get', 'op'], 0.55]),
+          'circle-stroke-opacity': dotOpacity(['literal', 1]),
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            6, ['*', ['get', 'r'], 0.8],
+            8, ['*', ['get', 'r'], 1.05],
+            10, ['*', ['get', 'r'], 1.45],
+            12, ['*', ['get', 'r'], 1.9],
+          ],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 0.6, 10, 1],
+        },
+      });
       map.addLayer({
         id: 'sel-points', type: 'circle', source: 'points', filter: ['==', ['get', 'id'], '__none__'],
-        paint: { 'circle-radius': 8, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#111', 'circle-stroke-width': 2.5 },
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, ['+', ['*', ['get', 'r'], 0.8], 3], 12, ['+', ['*', ['get', 'r'], 1.9], 3]],
+          'circle-color': 'rgba(0,0,0,0)',
+          'circle-stroke-color': '#111',
+          'circle-stroke-width': 2.5,
+          'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], Z_DOTS_FADE[0], 1, Z_DOTS_FADE[1], ['case', ['get', 'poly'], 0, 1]],
+        },
       });
       applyTheme(map, latest.current.theme);
       setReady(true);
     });
 
-    const pick = (pt: maplibregl.PointLike): { level: Level; id: string } | null => {
+    const pick = (pt: maplibregl.Point): { level: Level; id: string } | null => {
       const z = map.getZoom();
+      // dots are small: hit-test them with a few pixels of slack (more for fingers)
+      if (z < Z_DOTS_FADE[1]) {
+        const s = COARSE ? 10 : 4;
+        const near = map.queryRenderedFeatures([[pt.x - s, pt.y - s], [pt.x + s, pt.y + s]], { layers: ['points'] });
+        const hit = near
+          .filter((f) => z < Z_DOTS_FADE[0] || !f.properties.poly)
+          .sort((a, b) => Number(a.properties.r) - Number(b.properties.r))[0];
+        if (hit) return { level: 'locality', id: String(hit.properties.id) };
+      }
       const layers = [
         'points',
         ...(z >= Z_AREAS ? ['areas-fill', 'areas-hatch'] : []),
@@ -217,7 +253,10 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
       // queryRenderedFeatures returns top layer first
       for (const f of fs) {
         const id = String(f.properties.id);
-        if (f.layer.id === 'points') return { level: 'locality', id };
+        if (f.layer.id === 'points') {
+          if (z >= Z_DOTS_FADE[0] && f.properties.poly) continue;
+          return { level: 'locality', id };
+        }
         if (f.layer.id.startsWith('areas')) return { level: 'area', id };
         if (f.layer.id.startsWith('locs')) {
           if (z >= Z_AREAS && f.properties.hasAreas) continue;
@@ -279,6 +318,8 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
       }),
     });
     const loaded = new Set(areaFeatures.current.keys());
+    const shown = options.view === '25' ? model.r25 : (model.r26 ?? model.r25);
+    const unitValid = (id: string) => shown.localities[id]?.valid || model.r25.localities[id]?.valid || 0;
     (map.getSource('munis') as GeoJSONSource).setData(withPaint(geo.municipalities, 'municipality'));
     (map.getSource('locs') as GeoJSONSource).setData(
       withPaint(geo.localities, 'locality', (id) => ({ hasAreas: loaded.has(id) && (areaFeatures.current.get(id)?.length ?? 0) > 0 })),
@@ -292,7 +333,12 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
       features: geo.points.map((p) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
-        properties: { id: p.id, ...paintUnit(model, 'locality', p.id, options) },
+        properties: {
+          id: p.id,
+          poly: p.poly,
+          r: dotRadius(unitValid(p.id)),
+          ...paintUnit(model, 'locality', p.id, options),
+        },
       })),
     });
   }, [ready, model, geo, options, areasVersion]);

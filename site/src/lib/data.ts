@@ -52,7 +52,8 @@ export interface Geo {
   municipalities: FC;
   localities: FC;
   noJurisdiction: FC | null;
-  points: { id: string; name: string; muni: string; lon: number; lat: number }[];
+  /** locality dots; poly: the locality also has a polygon (the dot fades out when zoomed in) */
+  points: { id: string; name: string; muni: string; lon: number; lat: number; poly: boolean }[];
 }
 
 export async function loadGeo(): Promise<Geo> {

@@ -8,7 +8,7 @@ Outputs:
   data/geo/localities.csv                    CBS locality table (committed; used by ingest)
   site/public/data/geo/municipalities.topojson
   site/public/data/geo/localities.topojson
-  site/public/data/geo/points.json           localities without a polygon (Bedouin tribes, …)
+  site/public/data/geo/points.json           dots: polygon-less localities + small ones (see dots())
   site/public/data/geo/areas/<code>.json     neighborhood polygons per city (lazy-loaded)
   data/geo/geo_report.md                     coverage and unmatched items, for review
 """
@@ -49,6 +49,7 @@ MAPSHAPER = ROOT / "site" / "node_modules" / "mapshaper" / "bin" / "mapshaper"
 # was placed in a neighborhood (§3.3), and only for cities with 2+ neighborhoods.
 AREA_MIN_PLACED = 0.90
 AREA_MAX_PLACED = 1.05  # GovMap places stations by location; >5% spill-in means the polygons don't fit
+DOT_MAX_KM2 = 4.0  # built-up areas smaller than this also get a dot (invisible as polygons at country zoom)
 
 
 def download(url: str, dest: Path) -> None:
@@ -126,15 +127,40 @@ def build() -> dict:
                   "-rename-layers", "no_jurisdiction",
                   "-o", str(OUT / "no_jurisdiction.topojson"), "format=topojson", "quantization=100000")
 
-    pts = layers["points"]
-    points = [{"id": str(int(r.code)), "name": table.at[r.code, "name"], "muni": table.at[r.code, "muni_id"],
-               "lon": round(r.geometry.x, 5), "lat": round(r.geometry.y, 5)} for r in pts.itertuples()]
-    (OUT / "points.json").write_text(json.dumps(points, ensure_ascii=False), encoding="utf-8")
+    (OUT / "points.json").write_text(json.dumps(dots(layers, table), ensure_ascii=False), encoding="utf-8")
 
     areas_report = build_areas(valid, table)
     report = {**layers["report"], "areas": areas_report}
     write_report(report)
     return report
+
+
+def dots(layers: dict, table) -> list[dict]:
+    """Dots for localities too small to see as polygons at country zoom (points.json).
+
+    Every polygon-less locality (Bedouin tribes, army camps, …) has a dot (poly: false, shown at all
+    zooms). So do localities with a polygon that is hidden or tiny at country zoom (poly: true, the
+    map fades these dots out once the polygons are big enough to see): members of regional councils,
+    localities whose municipality has no jurisdiction polygon (West Bank settlements), and anything
+    under DOT_MAX_KM2.
+    """
+    fallback = {m for m, _ in layers["report"]["municipalities_fallback"]}
+    out = []
+    for r in layers["points"].itertuples():
+        out.append({"id": str(int(r.code)), "name": table.at[r.code, "name"], "muni": table.at[r.code, "muni_id"],
+                    "lon": round(r.geometry.x, 5), "lat": round(r.geometry.y, 5), "poly": False})
+    polys = layers["localities"]
+    area_km2 = polys.to_crs(G.ITM).geometry.area / 1e6
+    reps = polys.geometry.representative_point()
+    for code, area, pt in zip(polys.code, area_km2, reps):
+        code = int(code)
+        if code not in table.index:
+            continue
+        muni = table.at[code, "muni_id"]
+        if table.at[code, "muni_kind"] == "regional" or muni in fallback or area < DOT_MAX_KM2:
+            out.append({"id": str(code), "name": table.at[code, "name"], "muni": muni,
+                        "lon": round(pt.x, 5), "lat": round(pt.y, 5), "poly": True})
+    return out
 
 
 def build_areas(valid, table) -> list[dict]:
