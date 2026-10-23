@@ -1,0 +1,17 @@
+# Manual geography fixes. Reviewed by hand; every entry says why.
+
+# Regional council names that differ between the CBS locality file and the GovMap jurisdiction layer
+# (CBS name without "מועצה אזורית" → GovMap Muni_Heb).
+council_aliases:
+  אל-בטוף: אל בטוף
+  "בוסתן אל-מרג'": "בוסתאן אל מרג'"
+  גן רווה: גן רוה
+
+# Localities in the committee files that are missing from the CBS locality file.
+# lat/lon of the locality centre; municipality as a CBS municipal-status code (rc) or null.
+extra_localities:
+  3400:
+    name: חברון
+    lat: 31.5247
+    lon: 35.1105
+    council: null   # not in the CBS file at all; no regional council, shown as its own unit
