@@ -1,0 +1,13 @@
+# Alternative to GitHub Pages. Cloudflare Pages: same settings (root: site, build: npm run build, output: dist).
+[build]
+  base = "site"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=60, must-revalidate"

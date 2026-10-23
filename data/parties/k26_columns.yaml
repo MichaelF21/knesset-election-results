@@ -1,0 +1,9 @@
+# Column-name map for the 26th Knesset committee CSVs (§8).
+# If the committee renames a column, map the raw name to the canonical one here instead of
+# changing code. Canonical names: סמל ועדה, שם ישוב, סמל ישוב, בזב, מצביעים, פסולים, כשרים,
+# ברזל, קלפי, ריכוז, שופט, and the ballot letters from data/parties/k26.json.
+# Example:
+#   columns:
+#     "סמל יישוב": "סמל ישוב"
+#     "בעלי זכות": "בזב"
+columns: {}

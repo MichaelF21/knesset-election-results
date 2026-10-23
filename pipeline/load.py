@@ -57,11 +57,11 @@ def _read(path: Path | str, election: int | None) -> pd.DataFrame:
 
 
 def party_columns(df: pd.DataFrame) -> list[str]:
-    """Ballot-letter columns: everything after `כשרים`."""
+    """Ballot-letter columns: everything after `כשרים` (pipeline helper columns start with "_")."""
     cols = list(df.columns)
     if VALID not in cols:
         raise ValueError(f"missing column {VALID!r}; got {cols[:12]}")
-    return cols[cols.index(VALID) + 1:]
+    return [c for c in cols[cols.index(VALID) + 1:] if not str(c).startswith("_")]
 
 
 def _type(df: pd.DataFrame, required: list[str]) -> pd.DataFrame:

@@ -2,6 +2,7 @@
 
   python scripts/ingest.py --election 25
   python scripts/ingest.py --election 26 --locality expc.csv --stations expb.csv [--final]
+  python scripts/ingest.py --election 26 --download [--final]   fetch the committee CSVs first
 
 Validates on ingest (unknown ballot letters fail loudly; missing localities and station→locality→national
 sums are checked), aggregates every level, allocates seats, and writes site/public/data/.
@@ -27,8 +28,31 @@ from pipeline import stations as S  # noqa: E402
 from pipeline.seats import allocate  # noqa: E402
 
 
+# The committee published 2022 files at media25.bechirot.gov.il/files/exp{b,c}.csv. The 2026 address
+# follows the same pattern but is NOT verified until election night: override with --url-base.
+DEFAULT_URL_BASE = "https://media26.bechirot.gov.il/files"
+
+
 class IngestError(RuntimeError):
     pass
+
+
+def download(url_base: str, election: int) -> tuple[Path, Path]:
+    import requests
+
+    d = ROOT / "data" / "raw" / f"k{election}"
+    d.mkdir(parents=True, exist_ok=True)
+    out = []
+    for name in ("expc.csv", "expb.csv"):
+        r = requests.get(f"{url_base.rstrip('/')}/{name}", timeout=120,
+                         headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36"})
+        r.raise_for_status()
+        if b"," not in r.content[:200]:
+            raise IngestError(f"{name}: response does not look like CSV (got {r.content[:80]!r})")
+        (d / name).write_bytes(r.content)
+        out.append(d / name)
+        print(f"  downloaded {name} ({len(r.content):,} bytes)")
+    return out[0], out[1]
 
 
 def validate(election: int, loc, st, table) -> list[str]:
@@ -59,9 +83,12 @@ def validate(election: int, loc, st, table) -> list[str]:
 
 
 def counted_share(loc, st) -> float:
-    if st is not None and len(st):
-        return float((st[L.VOTERS] > 0).sum() / len(st) * 100)
-    return float((loc[L.VOTERS] > 0).sum() / len(loc) * 100)
+    """Share of eligible voters whose stations (or localities) have reported."""
+    df = st if st is not None and len(st) else loc
+    total = df[L.ELIGIBLE].sum()
+    if not total:
+        return 0.0
+    return float(df.loc[df[L.VOTERS] > 0, L.ELIGIBLE].sum() / total * 100)
 
 
 def run(election: int, locality_csv=None, stations_csv=None, final: bool | None = None,
@@ -75,6 +102,10 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
     loc, st = L.load_election(election, locality_csv, stations_csv)
     warnings = validate(election, loc, st, table)
 
+    is_final = final if final is not None else election == 25
+    if not is_final and st is not None:
+        counted = st[st[L.VOTERS] > 0].groupby(L.CODE)[L.ELIGIBLE].sum()
+        loc[A.ELIGIBLE_COUNTED] = loc[L.CODE].map(counted).fillna(0).astype("int64")
     locs = A.localities(loc, table)
     munis = A.municipalities(locs, table)
     nat, ext = A.national(loc)
@@ -93,7 +124,6 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
         areas = A.areas_from_govmap(gm, S.area_meta())
 
     seats = allocate(nat["votes"], P.load_surplus(election))
-    is_final = final if final is not None else election == 25
     pct = 100.0 if is_final else round(counted_share(loc, st), 1)
 
     d = out / "results" / f"k{election}"
@@ -131,7 +161,7 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
     secs = time.time() - t0
     print(f"k{election}: {len(locs)} localities, {len(munis)} municipalities, {len(areas)} areas, "
           f"valid {nat['valid']:,}, status {'final' if is_final else f'partial {pct}%'}"
-          f"{' [MOCK]' if mock else ''} → {out.relative_to(ROOT)} in {secs:.1f}s")
+          f"{' [MOCK]' if mock else ''} → {out.relative_to(ROOT) if out.is_relative_to(ROOT) else out} in {secs:.1f}s")
     print("  seats: " + ", ".join(f"{k} {v}" for k, v in sorted(seats.items(), key=lambda kv: -kv[1]) if v))
     for w in warnings:
         print("  WARNING " + w)
@@ -148,8 +178,12 @@ def main() -> None:
     g.add_argument("--final", action="store_true", default=None, help="mark the results final")
     g.add_argument("--partial", dest="final", action="store_false", help="mark the results partial")
     ap.add_argument("--no-areas", action="store_true", help="skip the GovMap neighborhood fetch")
+    ap.add_argument("--download", action="store_true", help="download expc.csv/expb.csv into data/raw/k{N}/ first")
+    ap.add_argument("--url-base", default=DEFAULT_URL_BASE, help="committee files URL (for --download)")
     args = ap.parse_args()
     try:
+        if args.download:
+            args.locality, args.stations = download(args.url_base, args.election)
         run(args.election, args.locality, args.stations, args.final, fetch_areas=not args.no_areas)
     except (IngestError, P.LineageError, ValueError) as e:
         sys.exit(f"INGEST FAILED: {e}")

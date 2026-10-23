@@ -1,0 +1,57 @@
+name: Ingest 26th Knesset results
+
+# Runs when new committee CSVs are committed to data/raw/k26/ (or by hand), commits the
+# regenerated site/public/data, then deploys. Results are "partial" until data/raw/k26/FINAL exists
+# or the manual run sets final=true.
+on:
+  push:
+    branches: [main]
+    paths: ['data/raw/k26/*.csv', 'data/raw/k26/FINAL']
+  workflow_dispatch:
+    inputs:
+      final:
+        description: Mark the results final
+        type: boolean
+        default: false
+      download:
+        description: Download the CSVs from the committee instead of using the committed ones
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Ingest
+        run: |
+          FLAGS="--partial"
+          if [ -f data/raw/k26/FINAL ] || [ "${{ inputs.final }}" = "true" ]; then FLAGS="--final"; fi
+          if [ "${{ inputs.download }}" = "true" ]; then FLAGS="$FLAGS --download"; fi
+          python scripts/ingest.py --election 26 $FLAGS
+      - run: pytest -q
+      - name: Commit results
+        run: |
+          git config user.name "election-ingest[bot]"
+          git config user.email "election-ingest@users.noreply.github.com"
+          git add site/public/data data/raw/govmap data/raw/k26
+          git diff --cached --quiet || git commit -m "Ingest 26th Knesset results ($(date -u +%H:%M) UTC)"
+          git push
+
+  deploy:
+    needs: ingest
+    uses: ./.github/workflows/deploy.yml

@@ -16,8 +16,11 @@ from . import load as L
 NUM = {"eligible": L.ELIGIBLE, "voters": L.VOTERS, "invalid": L.INVALID, "valid": L.VALID}
 
 
+ELIGIBLE_COUNTED = "_eligible_counted"  # set by ingest for partial results
+
+
 def make_unit(uid: str, name: str, eligible: int, voters: int, invalid: int, valid: int,
-              votes: dict[str, int], **extra) -> dict:
+              votes: dict[str, int], eligible_counted: int | None = None, **extra) -> dict:
     votes = {k: int(v) for k, v in sorted(votes.items(), key=lambda kv: -kv[1]) if v}
     ranked = list(votes.items())
     winner = ranked[0][0] if ranked and valid else None
@@ -26,18 +29,22 @@ def make_unit(uid: str, name: str, eligible: int, voters: int, invalid: int, val
     return {
         "id": uid, "name": name,
         "eligible": int(eligible), "voters": int(voters), "invalid": int(invalid), "valid": int(valid),
-        "turnout": round(voters / eligible * 100, 2) if eligible else None,
+        # partial results: turnout among stations already counted
+        "turnout": (round(voters / eligible_counted * 100, 2) if eligible_counted else None)
+        if eligible_counted is not None else (round(voters / eligible * 100, 2) if eligible else None),
         "votes": votes,
         "winner": winner,
         "winner_share": round(first / valid * 100, 2) if valid else None,
         "margin": round((first - second) / valid * 100, 2) if valid else None,
+        **({"eligible_counted": int(eligible_counted)} if eligible_counted is not None else {}),
         **extra,
     }
 
 
 def _row_unit(uid: str, name: str, row: pd.Series, parties: list[str], **extra) -> dict:
+    ec = int(row[ELIGIBLE_COUNTED]) if ELIGIBLE_COUNTED in row.index else None
     return make_unit(uid, name, *(int(row[c]) for c in NUM.values()),
-                     {p: int(row[p]) for p in parties}, **extra)
+                     {p: int(row[p]) for p in parties}, eligible_counted=ec, **extra)
 
 
 def csv_name(name: str) -> str:
@@ -75,8 +82,10 @@ def municipalities(locs: dict[str, dict], table: pd.DataFrame) -> dict[str, dict
             for k, v in u["votes"].items():
                 votes[k] = votes.get(k, 0) + v
         counted = [u for u in members if u["counted"]]
+        ec = [u.get("eligible_counted") for u in members]
+        ec_sum = sum(e or 0 for e in ec) if any(e is not None for e in ec) else None
         out[mid] = make_unit(
-            mid, name, *(sum(u[f] for u in members) for f in NUM), votes,
+            mid, name, *(sum(u[f] for u in members) for f in NUM), votes, eligible_counted=ec_sum,
             kind=kind, localities=sorted(u["id"] for u in members),
             counted=bool(counted), partial=0 < len(counted) < len(members))
     return out
@@ -84,7 +93,8 @@ def municipalities(locs: dict[str, dict], table: pd.DataFrame) -> dict[str, dict
 
 def national(loc: pd.DataFrame) -> tuple[dict, dict | None]:
     parties = L.party_columns(loc)
-    total = loc[list(NUM.values()) + parties].sum()
+    cols = list(NUM.values()) + parties + ([ELIGIBLE_COUNTED] if ELIGIBLE_COUNTED in loc.columns else [])
+    total = loc[cols].sum()
     nat = _row_unit("IL", "ארצי", total, parties)
     ext = loc[loc[L.CODE] == L.EXTERNAL_CODE]
     external = _row_unit("external", "מעטפות חיצוניות", ext.iloc[0], parties) if len(ext) else None
