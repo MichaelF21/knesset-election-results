@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site-mock",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd site && set MOCK=1&& npx vite --port 5179 --strictPort"],
+      "port": 5179
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd site && npx vite --port 5180 --strictPort"],
+      "port": 5180
+    }
+  ]
+}

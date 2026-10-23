@@ -12,3 +12,4 @@ site/public/data/mock/
 data/build/
 data/mock/
 site/mock-data/
+e2e-results/
