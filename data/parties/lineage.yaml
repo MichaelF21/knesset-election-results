@@ -1,0 +1,59 @@
+# Party lineage: 26th Knesset list → 25th Knesset predecessor(s). Hand-edited, reviewed by the user.
+# Ballot letters are NOT identities: continuity comes only from this file.
+#
+# kind:
+#   continuing                 one predecessor; swing against it
+#   merger_existing_existing   two+ predecessors; headline swing against their SUM, each shown in the tooltip
+#   merger_existing_new        existing party + new party; swing against the existing one, badge "כולל רשימה חדשה"
+#   split                      successor of a 2022 joint list (split_from); no own swing, the family
+#                              (sum of all successors) gets swing against the 2022 list
+#   new                        badge "חדשה", no swing
+#   withdrawn                  on the approved list but not running (no lineage needed)
+#
+# Decisions confirmed by the user (23.10.2026):
+#   - splits: family swing (§4.3.1)
+#   - Likud vs 2022 מחל only, no New Hope estimate (§4.3.2)
+#   - Yashar (דרך) is new (§4.3.3)
+#   - merger swing against the sum of predecessors (§4.2)
+# Rows marked `review:` were matched by name only and need the user's eye (see lineage_review.md).
+
+- { id: likud,          k26: "מחל", kind: continuing, predecessors: ["מחל"] }
+- { id: together,       k26: "רק",  kind: merger_existing_new, predecessors: ["פה"], note: "בנט + יש עתיד" }
+- { id: democrats,      k26: "אמת", kind: merger_existing_existing, predecessors: ["אמת", "מרצ"] }
+- { id: joint_list,     k26: "ודם", kind: merger_existing_existing, predecessors: ["ום", "ד"] }
+- { id: reservists_economic, k26: "די", kind: merger_existing_new, predecessors: ["יז"], note: "הנדל + הכלכלית החדשה" }
+- { id: rzp_zehut,      k26: "ט",   kind: split, split_from: "ט" }
+- { id: otzma,          k26: "ב",   kind: split, split_from: "ט" }
+- { id: noam,           k26: "ני",  kind: split, split_from: "ט" }
+- { id: blue_white,     k26: "כן",  kind: withdrawn, note: "הרשימה אינה מתמודדת (gov.il)" }
+- { id: yashar,         k26: "דרך", kind: new }
+- { id: shas,           k26: "שס",  kind: continuing, predecessors: ["שס"] }
+- { id: utj,            k26: "ג",   kind: continuing, predecessors: ["ג"] }
+- { id: yb,             k26: "ל",   kind: continuing, predecessors: ["ל"] }
+- { id: raam,           k26: "עם",  kind: continuing, predecessors: ["עם"] }
+- { id: amcha,          k26: "ך",   kind: new }
+# Name matches against k25.json (letters differ or were reused):
+- { id: ani_veata,      k26: "פה",  kind: continuing, predecessors: ["ך"], review: "2022 ך 'אני ואתה' → 2026 פה 'אני ואתה מפלגת העם הישראלית'" }
+- { id: pirates,        k26: "צף",  kind: continuing, predecessors: ["ף"], review: "2022 ף 'הפיראטים'" }
+- { id: tzomet,         k26: "בי",  kind: continuing, predecessors: ["זץ"], review: "2022 זץ 'צומת בראשות משה גרין' → 2026 בי 'צומת בית ישראל'" }
+- { id: biblical_bloc,  k26: "יק",  kind: continuing, predecessors: ["יק"], review: "2022 יק 'מפלגת הגוש התנ\"כי'" }
+- { id: shema,          k26: "נף",  kind: continuing, predecessors: ["נף"], review: "2022 נף 'מפלגת שמע בראשות נפתלי גולדמן'" }
+- { id: new_order,      k26: "קך",  kind: continuing, predecessors: ["קך"], review: "2022 קך 'סדר חדש - למען האזרחים הוותיקים'" }
+# No 2022 match:
+- { id: together_succeed, k26: "בד",  kind: new }
+- { id: dawn_lights,      k26: "בקר", kind: new }
+- { id: partnership,      k26: "ד",   kind: new, note: "not Balad (2022 ד)" }
+- { id: gan_eden,         k26: "ה",   kind: new }
+- { id: betach,           k26: "ז",   kind: new }
+- { id: haredi_public,    k26: "זך",  kind: new }
+- { id: brit_olam,        k26: "זץ",  kind: new }
+- { id: israel_first,     k26: "י",   kind: new }
+- { id: electoral_reform, k26: "נקי", kind: new }
+- { id: personal_security, k26: "נץ", kind: new }
+- { id: black_color,      k26: "נר",  kind: new }
+- { id: achi,             k26: "צבי", kind: new }
+- { id: sharshar,         k26: "צדק", kind: new }
+- { id: tkuma,            k26: "ק",   kind: new }
+- { id: womens_voice,     k26: "קה",  kind: new }
+- { id: mishpat_tzedek,   k26: "קץ",  kind: new }
+- { id: hakahal,          k26: "רץ",  kind: new }

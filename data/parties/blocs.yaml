@@ -1,0 +1,19 @@
+# Blocs per election (§4.4). Confirmed by the user 23.10.2026. Every list not named is "others".
+# 2026 כן (כחול לבן) withdrew, so it is not listed.
+order: [coalition, opposition, arab, others]
+blocs:
+  coalition:
+    name: גוש הקואליציה
+    k25: [מחל, ט, שס, ג]
+    k26: [מחל, ט, ב, ני, שס, ג]
+  opposition:
+    name: גוש האופוזיציה
+    k25: [פה, כן, ל, אמת, מרצ]
+    k26: [רק, ל, אמת, דרך, די]
+  arab:
+    name: מפלגות ערביות
+    k25: [עם, ום, ד]
+    k26: [עם, ודם]
+  others:
+    name: אחרות
+    rest: true

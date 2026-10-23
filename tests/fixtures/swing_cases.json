@@ -1,0 +1,459 @@
+{
+ "blocs": {
+  "blocs": {
+   "b1": {
+    "k25": [
+     "A",
+     "J"
+    ],
+    "k26": [
+     "A",
+     "S1",
+     "S2"
+    ]
+   },
+   "b2": {
+    "k25": [
+     "L",
+     "R",
+     "Y"
+    ],
+    "k26": [
+     "M",
+     "T"
+    ]
+   },
+   "rest": {
+    "rest": true
+   }
+  },
+  "order": [
+   "b1",
+   "b2",
+   "rest"
+  ]
+ },
+ "cases": {
+  "full": {
+   "expected": {
+    "blocs": {
+     "b1": {
+      "share22": 55.0,
+      "share26": 53.0,
+      "swing": -2.0
+     },
+     "b2": {
+      "share22": 30.0,
+      "share26": 35.0,
+      "swing": 5.0
+     },
+     "rest": {
+      "share22": 15.0,
+      "share26": 12.0,
+      "swing": -3.0
+     }
+    },
+    "comparable": true,
+    "families": {
+     "J": {
+      "members": [
+       "S1",
+       "S2"
+      ],
+      "share22": 25.0,
+      "share26": 28.0,
+      "swing": 3.0
+     }
+    },
+    "gone": {
+     "G": 15.0
+    },
+    "parties": {
+     "A": {
+      "kind": "continuing",
+      "share22": 30.0,
+      "share26": 25.0,
+      "swing": -5.0
+     },
+     "M": {
+      "kind": "merger_existing_existing",
+      "parts22": {
+       "L": 5.0,
+       "R": 5.0
+      },
+      "share22": 10.0,
+      "share26": 12.0,
+      "swing": 2.0
+     },
+     "S1": {
+      "kind": "split",
+      "share22": null,
+      "share26": 15.0,
+      "split_from": "J",
+      "swing": null
+     },
+     "S2": {
+      "kind": "split",
+      "share22": null,
+      "share26": 13.0,
+      "split_from": "J",
+      "swing": null
+     },
+     "T": {
+      "kind": "merger_existing_new",
+      "share22": 20.0,
+      "share26": 23.0,
+      "swing": 3.0
+     },
+     "Y": {
+      "kind": "new",
+      "share22": null,
+      "share26": 10.0,
+      "swing": null
+     }
+    },
+    "small_sample": false
+   },
+   "input": {
+    "v22": {
+     "A": 300,
+     "G": 150,
+     "J": 250,
+     "L": 50,
+     "R": 50,
+     "Y": 200
+    },
+    "v26": {
+     "A": 250,
+     "M": 120,
+     "S1": 150,
+     "S2": 130,
+     "T": 230,
+     "W": 0,
+     "Y": 100,
+     "Z": 20
+    },
+    "valid22": 1000,
+    "valid26": 1000
+   }
+  },
+  "no_2026": {
+   "expected": {
+    "blocs": {
+     "b1": {
+      "share22": 55.0,
+      "share26": null,
+      "swing": null
+     },
+     "b2": {
+      "share22": 30.0,
+      "share26": null,
+      "swing": null
+     },
+     "rest": {
+      "share22": 15.0,
+      "share26": null,
+      "swing": null
+     }
+    },
+    "comparable": false,
+    "families": {
+     "J": {
+      "members": [
+       "S1",
+       "S2"
+      ],
+      "share22": 25.0,
+      "share26": null,
+      "swing": null
+     }
+    },
+    "gone": {
+     "G": 15.0
+    },
+    "parties": {
+     "A": {
+      "kind": "continuing",
+      "share22": 30.0,
+      "share26": null,
+      "swing": null
+     },
+     "M": {
+      "kind": "merger_existing_existing",
+      "parts22": {
+       "L": 5.0,
+       "R": 5.0
+      },
+      "share22": 10.0,
+      "share26": null,
+      "swing": null
+     },
+     "S1": {
+      "kind": "split",
+      "share22": null,
+      "share26": null,
+      "split_from": "J",
+      "swing": null
+     },
+     "S2": {
+      "kind": "split",
+      "share22": null,
+      "share26": null,
+      "split_from": "J",
+      "swing": null
+     },
+     "T": {
+      "kind": "merger_existing_new",
+      "share22": 20.0,
+      "share26": null,
+      "swing": null
+     },
+     "Y": {
+      "kind": "new",
+      "share22": null,
+      "share26": null,
+      "swing": null
+     }
+    },
+    "small_sample": false
+   },
+   "input": {
+    "v22": {
+     "A": 300,
+     "G": 150,
+     "J": 250,
+     "L": 50,
+     "R": 50,
+     "Y": 200
+    },
+    "v26": null,
+    "valid22": 1000,
+    "valid26": 0
+   }
+  },
+  "small": {
+   "expected": {
+    "blocs": {
+     "b1": {
+      "share22": 80.0,
+      "share26": 90.0,
+      "swing": 10.0
+     },
+     "b2": {
+      "share22": 20.0,
+      "share26": 0,
+      "swing": -20.0
+     },
+     "rest": {
+      "share22": 0,
+      "share26": 10.0,
+      "swing": 10.0
+     }
+    },
+    "comparable": true,
+    "families": {
+     "J": {
+      "members": [
+       "S1",
+       "S2"
+      ],
+      "share22": 0.0,
+      "share26": 0.0,
+      "swing": 0.0
+     }
+    },
+    "gone": {},
+    "parties": {
+     "A": {
+      "kind": "continuing",
+      "share22": 80.0,
+      "share26": 90.0,
+      "swing": 10.0
+     },
+     "M": {
+      "kind": "merger_existing_existing",
+      "parts22": {
+       "L": 0.0,
+       "R": 0.0
+      },
+      "share22": 0.0,
+      "share26": 0.0,
+      "swing": 0.0
+     },
+     "S1": {
+      "kind": "split",
+      "share22": null,
+      "share26": 0.0,
+      "split_from": "J",
+      "swing": null
+     },
+     "S2": {
+      "kind": "split",
+      "share22": null,
+      "share26": 0.0,
+      "split_from": "J",
+      "swing": null
+     },
+     "T": {
+      "kind": "merger_existing_new",
+      "share22": 20.0,
+      "share26": 0.0,
+      "swing": -20.0
+     },
+     "Y": {
+      "kind": "new",
+      "share22": null,
+      "share26": 10.0,
+      "swing": null
+     }
+    },
+    "small_sample": true
+   },
+   "input": {
+    "v22": {
+     "A": 40,
+     "Y": 10
+    },
+    "v26": {
+     "A": 45,
+     "Y": 5
+    },
+    "valid22": 50,
+    "valid26": 50
+   }
+  },
+  "zero_2022": {
+   "expected": {
+    "blocs": {
+     "b1": {
+      "share22": 0.0,
+      "share26": 10.0,
+      "swing": 10.0
+     },
+     "b2": {
+      "share22": 100.0,
+      "share26": 0,
+      "swing": -100.0
+     },
+     "rest": {
+      "share22": 0,
+      "share26": 90.0,
+      "swing": 90.0
+     }
+    },
+    "comparable": true,
+    "families": {
+     "J": {
+      "members": [
+       "S1",
+       "S2"
+      ],
+      "share22": 0.0,
+      "share26": 0.0,
+      "swing": 0.0
+     }
+    },
+    "gone": {},
+    "parties": {
+     "A": {
+      "kind": "continuing",
+      "share22": 0.0,
+      "share26": 10.0,
+      "swing": 10.0
+     },
+     "M": {
+      "kind": "merger_existing_existing",
+      "parts22": {
+       "L": 0.0,
+       "R": 0.0
+      },
+      "share22": 0.0,
+      "share26": 0.0,
+      "swing": 0.0
+     },
+     "S1": {
+      "kind": "split",
+      "share22": null,
+      "share26": 0.0,
+      "split_from": "J",
+      "swing": null
+     },
+     "S2": {
+      "kind": "split",
+      "share22": null,
+      "share26": 0.0,
+      "split_from": "J",
+      "swing": null
+     },
+     "T": {
+      "kind": "merger_existing_new",
+      "share22": 100.0,
+      "share26": 0.0,
+      "swing": -100.0
+     },
+     "Y": {
+      "kind": "new",
+      "share22": null,
+      "share26": 90.0,
+      "swing": null
+     }
+    },
+    "small_sample": false
+   },
+   "input": {
+    "v22": {
+     "A": 0,
+     "Y": 100
+    },
+    "v26": {
+     "A": 10,
+     "Y": 90
+    },
+    "valid22": 100,
+    "valid26": 100
+   }
+  }
+ },
+ "lineage": [
+  {
+   "k26": "A",
+   "kind": "continuing",
+   "predecessors": [
+    "A"
+   ]
+  },
+  {
+   "k26": "M",
+   "kind": "merger_existing_existing",
+   "predecessors": [
+    "L",
+    "R"
+   ]
+  },
+  {
+   "k26": "T",
+   "kind": "merger_existing_new",
+   "predecessors": [
+    "Y"
+   ]
+  },
+  {
+   "k26": "S1",
+   "kind": "split",
+   "split_from": "J"
+  },
+  {
+   "k26": "S2",
+   "kind": "split",
+   "split_from": "J"
+  },
+  {
+   "k26": "Y",
+   "kind": "new"
+  },
+  {
+   "k26": "W",
+   "kind": "withdrawn"
+  }
+ ]
+}
