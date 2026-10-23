@@ -80,6 +80,9 @@ export const he = {
     notRunning: 'לא התמודדו הפעם',
     notRunningNote: 'רשימות מ-2022 ללא רשימה ממשיכה ב-2026, כדי שסכום האחוזים יתאזן.',
     threshold: 'מתחת לאחוז החסימה',
+    withdrawn: 'רשימות שפרשו',
+    withdrawnNote: 'אושרו להתמודד והודיעו על פרישה (gov.il). אינן מופיעות בתוצאות 2026.',
+    continuedAs: (name: string) => `ב-2026: ${name} — פרשה`,
   },
   unit: {
     eligible: 'בעלי זכות בחירה',
@@ -112,6 +115,7 @@ export const he = {
     includesNew: 'כולל רשימה חדשה',
     split: (from: string) => `פוצלה מ־${from}`,
     formerly: (letters: string) => `ב-2022: ${letters}`,
+    withdrawn: 'פרשה',
   },
   swing: {
     up: (v: string) => `עלייה של ${v} נקודות אחוז`,

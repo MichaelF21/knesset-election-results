@@ -154,6 +154,8 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
         nj = E.read_json(base / "results" / f"k{n}" / "national.json")
         seats_all[n] = nj["seats"] if nj else None
     E.write_json(out / "parties.json", E.parties_json(lineage, seats_all))
+    if r25 and not mock:
+        P.write_lineage_review(lineage, r25["national"]["votes"])
     if r25 and r26:
         for level, units in E.swing_levels(r25, r26, lineage).items():
             E.write_json(out / "swing" / f"{level}.json", units)

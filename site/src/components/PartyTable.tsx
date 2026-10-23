@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { he } from '../i18n/he';
 import { fmtInt, fmtPct } from '../lib/format';
-import { party, type Model } from '../lib/model';
+import { party, withdrawnLists, type Model } from '../lib/model';
 import type { UnitRows } from '../lib/rows';
 import { BallotChip } from './BallotChip';
 import { SwingValue } from './SwingValue';
@@ -26,6 +26,9 @@ export function PartyTable({ model, data, limit = 12, bars = true }: { model: Mo
   const famRows = compare && swing
     ? Object.entries(swing.families).filter(([, f]) => f.share26 !== null)
     : [];
+  const withdrawnFrom: Record<string, string> = Object.fromEntries(
+    withdrawnLists(model).filter((p) => p.lineage?.from_k25).map((p) => [p.lineage!.from_k25!, p.short_name]),
+  );
   const gone = compare && swing ? Object.entries(swing.gone).filter(([, v]) => v >= 0.05).sort((a, b) => b[1] - a[1]) : [];
 
   return (
@@ -93,6 +96,7 @@ export function PartyTable({ model, data, limit = 12, bars = true }: { model: Mo
             {gone.map(([k, v]) => (
               <li key={k}>
                 <BallotChip model={model} election="25" letters={k} size="sm" showBadges={false} /> <span className="num">{fmtPct(v)}</span>
+                {withdrawnFrom[k] && <span className="muted small"> · {he.summary.continuedAs(withdrawnFrom[k])}</span>}
               </li>
             ))}
           </ul>

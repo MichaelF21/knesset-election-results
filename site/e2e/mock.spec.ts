@@ -15,6 +15,14 @@ test('compare view shows lineage badges and swing', async ({ page }) => {
   await expect(table).toContainText('כולל רשימה חדשה');
   await expect(table.locator('.swing-up, .swing-down').first()).toBeVisible();
   await expect(page.locator('.blocs')).toContainText('גוש הקואליציה');
+  // Blue and White withdrew: shown with a badge, not in the results; Yashar is a new list
+  const withdrawn = page.locator('.withdrawn');
+  await expect(withdrawn).toContainText('רשימות שפרשו');
+  await expect(withdrawn).toContainText('כחול לבן');
+  await expect(withdrawn.locator('.badge-withdrawn')).toHaveText('פרשה');
+  await expect(table.locator('tr', { hasText: 'ישר!' })).toContainText('חדשה');
+  await page.locator('.gone summary').click();
+  await expect(page.locator('.gone')).toContainText('ב-2026: כחול לבן — פרשה');
 });
 
 test('click a city on the map, then switch color mode', async ({ page }) => {

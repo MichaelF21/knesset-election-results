@@ -1,6 +1,7 @@
 import { he } from '../i18n/he';
 import { fmtInt, fmtNum1, fmtPct } from '../lib/format';
-import { breadcrumbs, results, type Model } from '../lib/model';
+import { breadcrumbs, results, withdrawnLists, type Model } from '../lib/model';
+import { BallotChip } from './BallotChip';
 import { unitRows } from '../lib/rows';
 import { allocate } from '../lib/seats';
 import type { Selection, View } from '../lib/types';
@@ -96,6 +97,19 @@ function National({ model, view }: { model: Model; view: View }) {
   return (
     <>
       <SeatChart model={model} election={e} seats={seats} caption={partial ? he.summary.seatsProjected : he.summary.seats} />
+      {e === '26' && withdrawnLists(model).length > 0 && (
+        <section className="withdrawn" aria-labelledby="withdrawn-h">
+          <h3 id="withdrawn-h">{he.summary.withdrawn}</h3>
+          <ul>
+            {withdrawnLists(model).map((p) => (
+              <li key={p.letters}>
+                <BallotChip model={model} election="26" letters={p.letters} size="sm" />
+              </li>
+            ))}
+          </ul>
+          <p className="muted small">{he.summary.withdrawnNote}</p>
+        </section>
+      )}
       {r.external && r.external.valid > 0 && (
         <p className="external">
           <strong>{he.summary.external}:</strong> {fmtInt(r.external.valid)} {he.unit.valid} ({fmtPct((r.external.valid / r.national.valid) * 100)})

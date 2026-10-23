@@ -73,6 +73,8 @@ def validate_lineage(entries: list[dict], k25_letters: set[str], k26_lists: list
             errors.append(f"{k}: merger_existing_new needs exactly one existing predecessor")
         if kind in ("new", "withdrawn", "split") and preds:
             errors.append(f"{k}: kind {kind} takes no predecessors")
+        if "from_k25" in e and (kind != "withdrawn" or e["from_k25"] not in k25_letters):
+            errors.append(f"{k}: from_k25 is only for withdrawn lists and must be a 2022 list")
         if kind == "split" and e.get("split_from") not in k25_letters:
             errors.append(f"{k}: split_from {e.get('split_from')!r} is not a 2022 list")
         for p in preds:
@@ -128,6 +130,8 @@ def write_lineage_review(lin: Lineage, k25_votes: dict[str, int] | None = None) 
         k = e["k26"]
         if e["kind"] == "split":
             comp = f"family of {name22(e['split_from'])}"
+        elif e["kind"] == "withdrawn":
+            comp = f"withdrew; from {name22(e['from_k25'])}" if e.get("from_k25") else "withdrew"
         else:
             comp = " + ".join(name22(p) for p in e.get("predecessors") or []) or "—"
         note = ("⚠ " + e["review"]) if e.get("review") else e.get("note", "")

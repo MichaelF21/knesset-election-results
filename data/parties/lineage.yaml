@@ -8,12 +8,14 @@
 #   split                      successor of a 2022 joint list (split_from); no own swing, the family
 #                              (sum of all successors) gets swing against the 2022 list
 #   new                        badge "חדשה", no swing
-#   withdrawn                  on the approved list but not running (no lineage needed)
+#   withdrawn                  on the approved list but not running; shown with a "פרשה" badge, no swing.
+#                              from_k25 (optional, informational) names the 2022 list it came from
 #
 # Decisions confirmed by the user (23.10.2026):
 #   - splits: family swing (§4.3.1)
 #   - Likud vs 2022 מחל only, no New Hope estimate (§4.3.2)
-#   - Yashar (דרך) is new (§4.3.3)
+#   - Yashar (דרך) is new (§4.3.3), confirmed again after Blue and White withdrew (23.10.2026)
+#   - Blue and White (כן) is shown as withdrawn; 2022 National Unity (כן) has no running successor
 #   - merger swing against the sum of predecessors (§4.2)
 # Rows marked `review:` were matched by name only and need the user's eye (see lineage_review.md).
 
@@ -25,7 +27,7 @@
 - { id: rzp_zehut,      k26: "ט",   kind: split, split_from: "ט" }
 - { id: otzma,          k26: "ב",   kind: split, split_from: "ט" }
 - { id: noam,           k26: "ני",  kind: split, split_from: "ט" }
-- { id: blue_white,     k26: "כן",  kind: withdrawn, note: "הרשימה אינה מתמודדת (gov.il)" }
+- { id: blue_white,     k26: "כן",  kind: withdrawn, from_k25: "כן", note: "הרשימה אינה מתמודדת (gov.il)" }
 - { id: yashar,         k26: "דרך", kind: new }
 - { id: shas,           k26: "שס",  kind: continuing, predecessors: ["שס"] }
 - { id: utj,            k26: "ג",   kind: continuing, predecessors: ["ג"] }

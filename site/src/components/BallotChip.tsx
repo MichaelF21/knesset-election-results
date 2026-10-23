@@ -1,3 +1,4 @@
+import { he } from '../i18n/he';
 import { badgeTexts, party, type Model } from '../lib/model';
 import type { ElectionKey } from '../lib/types';
 
@@ -25,7 +26,7 @@ export function BallotChip({
       {badges.length > 0 && (
         <span className="badges">
           {badges.map((b) => (
-            <span key={b} className={`badge${b === 'חדשה' ? ' badge-new' : ''}`}>
+            <span key={b} className={`badge${b === he.badges.new ? ' badge-new' : b === he.badges.withdrawn ? ' badge-withdrawn' : ''}`}>
               {b}
             </span>
           ))}

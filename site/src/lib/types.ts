@@ -41,6 +41,8 @@ export interface LineageEntry {
   kind: LineageKind;
   predecessors?: string[];
   split_from?: string;
+  /** withdrawn lists: the 2022 list it came from (informational, no swing) */
+  from_k25?: string;
   id?: string;
   note?: string;
 }

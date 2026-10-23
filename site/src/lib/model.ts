@@ -127,6 +127,11 @@ export function swingTargets(m: Model): { value: string; label: string }[] {
   return out;
 }
 
+/** 2026 lists that withdrew after approval (lineage kind "withdrawn"). */
+export function withdrawnLists(m: Model): PartyInfo[] {
+  return m.parties.k26.filter((p) => p.lineage?.kind === 'withdrawn');
+}
+
 export function blocName(m: Model, id: string): string {
   return m.blocs.items[id]?.name ?? id;
 }
@@ -185,6 +190,8 @@ export function badgeTexts(m: Model, letters: string): string[] {
       return [he.badges.split(l.split_from ?? '')];
     case 'continuing':
       return l.predecessors && l.predecessors[0] !== letters ? [he.badges.formerly(l.predecessors[0])] : [];
+    case 'withdrawn':
+      return [he.badges.withdrawn];
     default:
       return [];
   }

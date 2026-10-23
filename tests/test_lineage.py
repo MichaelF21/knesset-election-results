@@ -61,3 +61,22 @@ def test_blocs_cover_known_lists():
         for n in (25, 26):
             official = {r["letters"] for r in P.read_lists(n)}
             assert set(blocs["blocs"][bid].get(f"k{n}") or []) <= official
+
+
+def test_blue_and_white_withdrawn_and_yashar_new():
+    lin = P.load_lineage()
+    assert lin.by_letter["כן"]["kind"] == "withdrawn"
+    assert lin.by_letter["כן"]["from_k25"] == "כן"
+    assert lin.by_letter["דרך"]["kind"] == "new"
+    assert "כן" not in {e["k26"] for e in lin.running}
+    # National Unity has no running successor, so it is listed as "did not run"
+    assert "כן" not in lin.used_k25()
+
+
+def test_from_k25_only_on_withdrawn():
+    entries = copy.deepcopy(P.read_yaml("lineage.yaml"))
+    for e in entries:
+        if e["k26"] == "דרך":
+            e["from_k25"] = "כן"
+    with pytest.raises(P.LineageError, match="from_k25"):
+        P.validate_lineage(entries, {r["letters"] for r in P.read_lists(25)}, P.read_lists(26))

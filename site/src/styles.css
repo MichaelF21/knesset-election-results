@@ -150,6 +150,8 @@ button, input, select { font: inherit; color: inherit; }
 .badges { grid-column: 2; display: flex; flex-wrap: wrap; gap: 3px; margin-block-start: 2px; }
 .badge { font-size: 0.7rem; font-weight: 700; background: #ecebe7; color: var(--ink-2); border-radius: 4px; padding-inline: 5px; }
 .badge-new { background: #1d1d1b; color: #fff; }
+.badge-withdrawn { background: #fff; color: #8a1c1c; border: 1px solid #8a1c1c; }
+.withdrawn ul { list-style: none; padding: 0; margin: 0 0 4px; display: flex; flex-wrap: wrap; gap: 6px; }
 
 .party-table-wrap { overflow-x: auto; }
 .party-table { inline-size: 100%; border-collapse: collapse; }
