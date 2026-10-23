@@ -1,7 +1,8 @@
 // Joins results, party metadata and lineage into what the UI shows for any unit.
 import { he } from '../i18n/he';
 import { allocate } from './seats';
-import { blocOf, partySwingValue, unitSwing, type UnitSwing } from './swing';
+import { fmtPct } from './format';
+import { blocOf, partySwingValue, unitSwing, type PartySwing, type UnitSwing } from './swing';
 import type { BlocDefs, ElectionKey, LineageEntry, Level, Meta, PartiesFile, PartyInfo, Results, Unit, Votes } from './types';
 
 export interface Model {
@@ -123,7 +124,7 @@ export function swingTargets(m: Model): { value: string; label: string }[] {
   for (const p of running) out.push({ value: p.letters, label: `${p.short_name} (${p.letters})` });
   for (const [src, members] of Object.entries(m.parties.families)) {
     const names = members.map((l) => m.p26[l]?.short_name ?? l).join(' + ');
-    out.push({ value: `family:${src}`, label: he.modes.family(names) });
+    out.push({ value: `family:${src}`, label: he.modes.family(m.p25[src]?.short_name ?? src, names) });
   }
   return out;
 }
@@ -190,24 +191,60 @@ export function breadcrumbs(m: Model, level: Level, id: string): Crumb[] {
   return crumbs;
 }
 
+/** 2022 display name of a list ("הציונות הדתית–עוצמה יהודית"), never just its ballot letters. */
+export function name22(m: Model, letters: string): string {
+  return m.p25[letters]?.short_name ?? letters;
+}
+
 export function badgeTexts(m: Model, letters: string): string[] {
   const p = m.p26[letters];
   const l = p?.lineage;
   if (!l) return [];
+  const preds = (l.predecessors ?? []).map((x) => name22(m, x));
   switch (l.kind) {
     case 'new':
       return [he.badges.new];
     case 'merger_existing_existing':
-      return [he.badges.merger((l.predecessors ?? []).join(' + '))];
+      return [he.badges.merger(he.and(preds))];
     case 'merger_existing_new':
-      return [he.badges.includesNew];
+      return [he.badges.mergerNew(preds[0] ?? '', l.joined ?? '')];
     case 'split':
-      return [he.badges.split(l.split_from ?? '')];
-    case 'continuing':
-      return l.predecessors && l.predecessors[0] !== letters ? [he.badges.formerly(l.predecessors[0])] : [];
+      return [he.badges.split(name22(m, l.split_from ?? ''))];
+    case 'continuing': {
+      const prev = l.predecessors?.[0];
+      // same letters and same name: nothing to explain
+      if (!prev || (prev === letters && name22(m, prev) === p.short_name)) return [];
+      return [he.badges.formerly(name22(m, prev), prev)];
+    }
     case 'withdrawn':
       return [he.badges.withdrawn];
     default:
       return [];
+  }
+}
+
+/** One line saying what a 2026 list's swing is compared against (comparison view). */
+export function lineageNote(m: Model, letters: string, row?: PartySwing): string | null {
+  const l = m.p26[letters]?.lineage;
+  if (!l) return null;
+  const pct = (x: number | null | undefined) => (x === null || x === undefined ? '—' : fmtPct(x));
+  const preds = l.predecessors ?? [];
+  switch (l.kind) {
+    case 'new':
+      return he.lineageNote.new;
+    case 'split':
+      return he.lineageNote.split(name22(m, l.split_from ?? ''));
+    case 'merger_existing_existing': {
+      const parts = preds.map((p) => `${name22(m, p)} ${pct(row?.parts22?.[p])}`).join(' + ');
+      return he.lineageNote.merger(`${parts} = ${pct(row?.share22)}`);
+    }
+    case 'merger_existing_new':
+      return he.lineageNote.mergerNew(name22(m, preds[0] ?? ''), pct(row?.share22));
+    case 'continuing':
+      return preds[0] && (preds[0] !== letters || name22(m, preds[0]) !== m.p26[letters]?.short_name)
+        ? he.lineageNote.continuing(`${name22(m, preds[0])} (${preds[0]})`, pct(row?.share22))
+        : null;
+    default:
+      return null;
   }
 }

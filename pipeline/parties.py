@@ -71,6 +71,8 @@ def validate_lineage(entries: list[dict], k25_letters: set[str], k26_lists: list
             errors.append(f"{k}: merger_existing_existing needs 2+ predecessors")
         if kind == "merger_existing_new" and len(preds) != 1:
             errors.append(f"{k}: merger_existing_new needs exactly one existing predecessor")
+        if kind == "merger_existing_new" and not str(e.get("joined") or "").strip():
+            errors.append(f"{k}: merger_existing_new needs 'joined' (who joined the existing list, in Hebrew)")
         if kind in ("new", "withdrawn", "split") and preds:
             errors.append(f"{k}: kind {kind} takes no predecessors")
         if "from_k25" in e and (kind != "withdrawn" or e["from_k25"] not in k25_letters):
@@ -135,6 +137,8 @@ def write_lineage_review(lin: Lineage, k25_votes: dict[str, int] | None = None) 
         else:
             comp = " + ".join(name22(p) for p in e.get("predecessors") or []) or "—"
         note = ("⚠ " + e["review"]) if e.get("review") else e.get("note", "")
+        if e.get("joined"):
+            comp += f" (joined by {e['joined']})"
         rows.append(f"| `{k}` | {k26[k]['short_name']} | {e['kind']} | {comp} | {note} |")
     gone = [p for p in k25 if p not in lin.used_k25()]
     rows += ["", "## 2022 lists with no 2026 successor (shown as \"לא התמודדו הפעם\")", "",

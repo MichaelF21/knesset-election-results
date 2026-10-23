@@ -4,7 +4,9 @@
 # kind:
 #   continuing                 one predecessor; swing against it
 #   merger_existing_existing   two+ predecessors; headline swing against their SUM, each shown in the tooltip
-#   merger_existing_new        existing party + new party; swing against the existing one, badge "כולל רשימה חדשה"
+#   merger_existing_new        existing party + new party; swing against the existing one only.
+#                              joined (required, Hebrew) names the new partner, shown on the site:
+#                              "איחוד של <2022 list> עם <joined>"
 #   split                      successor of a 2022 joint list (split_from); no own swing, the family
 #                              (sum of all successors) gets swing against the 2022 list
 #   new                        badge "חדשה", no swing
@@ -20,10 +22,10 @@
 # Rows marked `review:` were matched by name only and need the user's eye (see lineage_review.md).
 
 - { id: likud,          k26: "מחל", kind: continuing, predecessors: ["מחל"] }
-- { id: together,       k26: "רק",  kind: merger_existing_new, predecessors: ["פה"], note: "בנט + יש עתיד" }
+- { id: together,       k26: "רק",  kind: merger_existing_new, predecessors: ["פה"], joined: "מפלגתו החדשה של נפתלי בנט", note: "בנט + יש עתיד" }
 - { id: democrats,      k26: "אמת", kind: merger_existing_existing, predecessors: ["אמת", "מרצ"] }
 - { id: joint_list,     k26: "ודם", kind: merger_existing_existing, predecessors: ["ום", "ד"] }
-- { id: reservists_economic, k26: "די", kind: merger_existing_new, predecessors: ["יז"], note: "הנדל + הכלכלית החדשה" }
+- { id: reservists_economic, k26: "די", kind: merger_existing_new, predecessors: ["יז"], joined: "המילואימניקים של יועז הנדל", note: "הנדל + הכלכלית החדשה" }
 - { id: rzp_zehut,      k26: "ט",   kind: split, split_from: "ט" }
 - { id: otzma,          k26: "ב",   kind: split, split_from: "ט" }
 - { id: noam,           k26: "ני",  kind: split, split_from: "ט" }

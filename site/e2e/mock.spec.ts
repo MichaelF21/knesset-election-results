@@ -9,10 +9,20 @@ test.beforeEach(async ({ page }) => {
 test('compare view shows lineage badges and swing', async ({ page }) => {
   await expect(page.getByRole('radio', { name: 'השוואה' })).toHaveAttribute('aria-checked', 'true');
   const table = page.locator('.party-table').first();
-  await expect(table).toContainText('איחוד של אמת + מרצ');
+  await expect(table).toContainText('איחוד של העבודה ומרצ');
   await expect(table).toContainText('חדשה');
-  await expect(table).toContainText('פוצלה מ־ט');
-  await expect(table).toContainText('כולל רשימה חדשה');
+  await expect(table).toContainText('פוצלה מהציונות הדתית–עוצמה יהודית');
+  await expect(table).toContainText('איחוד של יש עתיד עם מפלגתו החדשה של נפתלי בנט');
+  await expect(table).toContainText('איחוד של הכלכלית החדשה עם המילואימניקים של יועז הנדל');
+  await page.getByRole('button', { name: 'הצג את כל הרשימות' }).first().click(); // small lists are folded
+  await expect(table).toContainText('ב-2022: אני ואתה (פתק ך)');
+  // each list explains what its swing is compared against, by list name
+  await expect(table).toContainText('ההשוואה: מול יש עתיד בלבד');
+  await expect(table).toContainText('ההשוואה: מול סך הרשימות ב-2022 (העבודה');
+  await expect(table).toContainText('סך הרשימות שהתפצלו מהציונות הדתית–עוצמה יהודית');
+  // no bare ballot letters in explanations
+  await expect(table).not.toContainText('פוצלה מ־ט');
+  await expect(table).not.toContainText('כולל רשימה חדשה');
   await expect(table.locator('.swing-up, .swing-down').first()).toBeVisible();
   await expect(page.locator('.blocs')).toContainText('גוש הקואליציה');
   // Blue and White withdrew: shown with a badge, not in the results; Yashar is a new list

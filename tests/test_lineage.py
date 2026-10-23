@@ -80,3 +80,14 @@ def test_from_k25_only_on_withdrawn():
             e["from_k25"] = "כן"
     with pytest.raises(P.LineageError, match="from_k25"):
         P.validate_lineage(entries, {r["letters"] for r in P.read_lists(25)}, P.read_lists(26))
+
+
+def test_merger_with_new_list_names_the_new_partner():
+    lin = P.load_lineage()
+    assert lin.by_letter["רק"]["joined"] == "מפלגתו החדשה של נפתלי בנט"
+    entries = copy.deepcopy(P.read_yaml("lineage.yaml"))
+    for e in entries:
+        if e["k26"] == "די":
+            del e["joined"]
+    with pytest.raises(P.LineageError, match="joined"):
+        P.validate_lineage(entries, {r["letters"] for r in P.read_lists(25)}, P.read_lists(26))

@@ -1,19 +1,10 @@
 import { useState } from 'react';
 import { he } from '../i18n/he';
 import { fmtInt, fmtPct } from '../lib/format';
-import { party, predecessorSeats, withdrawnLists, type Model } from '../lib/model';
+import { lineageNote, name22, party, predecessorSeats, withdrawnLists, type Model } from '../lib/model';
 import type { UnitRows } from '../lib/rows';
 import { BallotChip } from './BallotChip';
 import { SwingValue } from './SwingValue';
-
-/** "אמת 3.7% + מרצ 3.2% = 6.9% → 8.1%" for a merger of two existing lists. */
-// Each number is wrapped in a first-strong isolate (FSI…PDI) so bidi keeps the RTL order.
-const iso = (s: string) => `⁨${s}⁩`;
-function mergerDetail(parts: Record<string, number>, share26: number): string {
-  const p = Object.entries(parts).map(([k, v]) => `${k} ${iso(fmtPct(v))}`).join(' + ');
-  const sum = Object.values(parts).reduce((a, b) => a + b, 0);
-  return `${p} = ${iso(fmtPct(sum))} ← ${iso(fmtPct(share26))}`;
-}
 
 function Seats({ n, delta }: { n: number | undefined; delta?: number | null }) {
   if (!n) {
@@ -26,6 +17,7 @@ function Seats({ n, delta }: { n: number | undefined; delta?: number | null }) {
   return (
     <>
       <span className="seats">{n}</span>
+      {delta ? ' ' : null}
       {delta ? (
         <span className={`seats-delta ${delta > 0 ? 'swing-up' : 'swing-down'}`} dir="ltr" title={he.unit.seatsChange}>
           ({delta > 0 ? '+' : '−'}
@@ -58,6 +50,9 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
   const famRows = compare && swing
     ? Object.entries(swing.families).filter(([, f]) => f.share26 !== null)
     : [];
+  const notes: Record<string, string | null> = Object.fromEntries(
+    rows.map((r) => [r.letters, compare ? lineageNote(model, r.letters, swing?.parties[r.letters]) : null]),
+  );
   const deltaFor = (letters: string): number | null => {
     const prev = seats22 ? predecessorSeats(model, letters, seats22) : null;
     return prev === null ? null : (seats?.[letters] ?? 0) - prev;
@@ -89,6 +84,7 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
                     <span style={{ inlineSize: `${(r.share / max) * 100}%`, background: r.color }} />
                   </span>
                 )}
+                {compare && notes[r.letters] && <span className="lineage-note">{notes[r.letters]}</span>}
               </th>
               {seats && (
                 <td className="num">
@@ -98,22 +94,19 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
               <td className="num col-votes">{fmtInt(r.votes)}</td>
               <td className="num">{fmtPct(r.share)}</td>
               {compare && (
-                <td className="num" title={r.parts22 ? mergerDetail(r.parts22, r.share) : undefined}>
-                  {r.kind === 'split' ? (
-                    <span className="muted">{he.badges.split(r.splitFrom ?? '')}</span>
-                  ) : r.kind === 'new' ? (
-                    <span className="badge badge-new">{he.badges.new}</span>
-                  ) : (
-                    <SwingValue value={r.swing} />
-                  )}
-                  {r.parts22 && <div className="merger-detail">{mergerDetail(r.parts22, r.share)}</div>}
+                <td className="num" title={notes[r.letters] ?? undefined}>
+                  {/* split lists: the swing is on the family row; new lists: nothing to compare */}
+                  <SwingValue value={r.kind === 'split' || r.kind === 'new' ? null : r.swing} />
                 </td>
               )}
             </tr>
           ))}
           {famRows.map(([src, f]) => (
             <tr key={`fam-${src}`} className="family-row">
-              <th scope="row">{he.unit.familyRow(f.members.map((l) => party(model, '26', l)?.short_name ?? l).join(' + '))}</th>
+              <th scope="row" title={f.members.map((l) => party(model, '26', l)?.short_name ?? l).join(' + ')}>
+                {he.unit.familyRow(name22(model, src))}
+                <span className="lineage-note">{f.members.map((l) => party(model, '26', l)?.short_name ?? l).join(' + ')}</span>
+              </th>
               {seats && (
                 <td className="num">
                   <Seats
@@ -124,7 +117,7 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
               )}
               <td className="num col-votes" />
               <td className="num">{fmtPct(f.share26)}</td>
-              <td className="num" title={`${src} ${fmtPct(f.share22)} → ${fmtPct(f.share26)}`}>
+              <td className="num" title={`${name22(model, src)} ${fmtPct(f.share22)} ← ${fmtPct(f.share26)}`}>
                 <SwingValue value={f.swing} />
               </td>
             </tr>

@@ -37,7 +37,7 @@ export const he = {
     party: 'מפלגה',
     bloc: 'גוש',
     needsCompare: 'זמין לאחר פרסום תוצאות כנסת 26',
-    family: (names: string) => `משפחה: ${names}`,
+    family: (from: string, names: string) => `${names} (יחד, פוצלו מ${from})`,
   },
   legend: {
     title: 'מקרא',
@@ -106,7 +106,7 @@ export const he = {
     notCounted: 'טרם נספר',
     partialUnit: 'נספרו רק חלק מהיישובים ברשות',
     unplaced: (pct: string) => `${pct}% מקולות העיר לא שויכו לשכונה`,
-    familyRow: (names: string) => `סך המשפחה (${names})`,
+    familyRow: (from: string) => `סך הרשימות שהתפצלו מ${from}`,
     noResults: 'אין תוצאות ליחידה זו בבחירות שנבחרו',
     localities: 'יישובים ברשות',
     showAll: 'הצג את כל הרשימות',
@@ -114,12 +114,22 @@ export const he = {
   },
   badges: {
     new: 'חדשה',
-    merger: (parts: string) => `איחוד של ${parts}`,
-    includesNew: 'כולל רשימה חדשה',
-    split: (from: string) => `פוצלה מ־${from}`,
-    formerly: (letters: string) => `ב-2022: ${letters}`,
+    merger: (names: string) => `איחוד של ${names}`,
+    mergerNew: (existing: string, joined: string) => `איחוד של ${existing} עם ${joined}`,
+    split: (from: string) => `פוצלה מ${from}`,
+    formerly: (name: string, letters: string) => `ב-2022: ${name} (פתק ${letters})`,
     withdrawn: 'פרשה',
   },
+  // what each 2026 list's swing is compared against (comparison view)
+  lineageNote: {
+    continuing: (name: string, share: string) => `ההשוואה: מול ${name} ב-2022 (${share})`,
+    merger: (detail: string) => `ההשוואה: מול סך הרשימות ב-2022 (${detail})`,
+    mergerNew: (existing: string, share: string) => `ההשוואה: מול ${existing} בלבד (${share} ב-2022)`,
+    split: (from: string) => `התנודה מוצגת בשורת סך הרשימות שהתפצלו מ${from}`,
+    new: 'רשימה חדשה: אין השוואה ל-2022',
+  },
+  /** "א", "א וב", "א, ב וג" */
+  and: (items: string[]) => (items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} ו${items[items.length - 1]}`),
   swing: {
     up: (v: string) => `עלייה של ${v} נקודות אחוז`,
     down: (v: string) => `ירידה של ${v} נקודות אחוז`,

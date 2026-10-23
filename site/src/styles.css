@@ -234,7 +234,7 @@ button, input, select { font: inherit; color: inherit; }
 .bar { display: block; block-size: 5px; background: var(--soft-2); border-radius: 3px; margin-block-start: 4px; overflow: hidden; }
 .bar span { display: block; block-size: 100%; border-radius: 3px; }
 .family-row th { font-weight: 700; font-size: 0.88rem; }
-.merger-detail { font-size: 0.72rem; color: var(--muted); white-space: normal; }
+.lineage-note { display: block; margin-block-start: 3px; font-size: 0.74rem; font-weight: 400; color: var(--muted); line-height: 1.3; }
 .gone { margin-block-start: 10px; font-size: 0.9rem; }
 .gone summary { cursor: pointer; font-weight: 700; }
 .gone ul { list-style: none; padding: 0; display: grid; gap: 4px; }
@@ -293,5 +293,6 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Seats column */
 .seats { font-weight: 800; }
-.seats-delta { font-weight: 600; font-size: 0.8em; margin-inline-start: 3px; }
+/* the change is dir=ltr, so the gap before it is a space in the markup, not a logical margin */
+.seats-delta { font-weight: 600; font-size: 0.8em; }
 .seat-dot { stroke: var(--card); }

@@ -43,6 +43,8 @@ export interface LineageEntry {
   split_from?: string;
   /** withdrawn lists: the 2022 list it came from (informational, no swing) */
   from_k25?: string;
+  /** merger_existing_new: who joined the existing list (Hebrew, shown on the site) */
+  joined?: string;
   id?: string;
   note?: string;
 }

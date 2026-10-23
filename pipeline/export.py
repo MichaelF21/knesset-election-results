@@ -42,7 +42,7 @@ def parties_json(lineage: P.Lineage, seats: dict[int, dict | None]) -> dict:
                    "bloc": P.bloc_of(blocs, n, r["letters"])}
             if n == 26:
                 e = lineage.by_letter[r["letters"]]
-                row["lineage"] = {k: v for k, v in e.items() if k in ("id", "kind", "predecessors", "split_from", "from_k25", "note")}
+                row["lineage"] = {k: v for k, v in e.items() if k in ("id", "kind", "predecessors", "split_from", "from_k25", "joined", "note")}
             rows.append(row)
         out[f"k{n}"] = rows
     out["families"] = lineage.families()
