@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+site/dist/
+site/test-results/
+site/playwright-report/
+data/raw/geo/*
+!data/raw/geo/README.md
+data/raw/parties/
+site/public/data/mock/
