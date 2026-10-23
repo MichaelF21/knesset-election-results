@@ -7,14 +7,25 @@ import type { Level, Selection } from '../lib/types';
 import { paintUnit, type PaintOptions } from './paint';
 import { Tooltip } from '../components/Tooltip';
 import { he } from '../i18n/he';
+import type { Theme } from '../lib/theme';
 
 // Zoom thresholds: municipalities → localities → neighborhoods.
 export const Z_LOCALITIES = 9;
 export const Z_AREAS = 11.5;
 const ISRAEL: [number, number, number, number] = [34.2, 29.45, 35.95, 33.35];
 
+// Map chrome per theme: background, borders between units, selection, hatching for "no data".
+const MAP_COLORS: Record<Theme, Record<string, string>> = {
+  light: { bg: '#f4f3ef', line: '#ffffff', sel: '#111111', outline: '#55554f', pointStroke: '#ffffff', pointNoData: '#bdbdb8', hatchA: '#e4e4e1', hatchB: '#a3a39e' },
+  dark: { bg: '#121211', line: '#1c1c1a', sel: '#ffffff', outline: '#c4c3bd', pointStroke: '#121211', pointNoData: '#55554f', hatchA: '#2a2a27', hatchB: '#55554f' },
+};
+
+// Touch screens: one finger scrolls the page, two fingers move the map.
+const COARSE = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+
 interface Props {
   model: Model;
+  theme: Theme;
   geo: Geo;
   options: PaintOptions;
   outline: boolean;
@@ -31,14 +42,15 @@ interface Hover {
   id: string;
 }
 
-function hatchImage(): ImageData {
+function hatchImage(theme: Theme): ImageData {
+  const c0 = MAP_COLORS[theme];
   const n = 8;
   const c = document.createElement('canvas');
   c.width = c.height = n;
   const g = c.getContext('2d')!;
-  g.fillStyle = '#e4e4e1';
+  g.fillStyle = c0.hatchA;
   g.fillRect(0, 0, n, n);
-  g.strokeStyle = '#a3a39e';
+  g.strokeStyle = c0.hatchB;
   g.lineWidth = 1.2;
   g.beginPath();
   g.moveTo(0, n);
@@ -66,15 +78,26 @@ function bbox(features: FC['features']): [number, number, number, number] | null
   return x0 === Infinity ? null : [x0, y0, x1, y1];
 }
 
-export function MapView({ model, geo, options, outline, selection, onSelect, areasVersion, onAreasLoaded }: Props) {
+function applyTheme(map: maplibregl.Map, theme: Theme): void {
+  const c = MAP_COLORS[theme];
+  map.setPaintProperty('bg', 'background-color', c.bg);
+  for (const id of ['munis-line', 'locs-line', 'areas-line']) map.setPaintProperty(id, 'line-color', c.line);
+  for (const id of ['sel-munis', 'sel-locs', 'sel-areas']) map.setPaintProperty(id, 'line-color', c.sel);
+  map.setPaintProperty('sel-points', 'circle-stroke-color', c.sel);
+  map.setPaintProperty('outline', 'line-color', c.outline);
+  map.setPaintProperty('points', 'circle-stroke-color', c.pointStroke);
+  map.setPaintProperty('points', 'circle-color', ['case', ['get', 'nodata'], c.pointNoData, ['get', 'fill']]);
+}
+
+export function MapView({ model, theme, geo, options, outline, selection, onSelect, areasVersion, onAreasLoaded }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const [hover, setHover] = useState<Hover | null>(null);
   const areaFeatures = useRef<Map<string, FC['features']>>(new Map());
   const loadingCities = useRef<Set<string>>(new Set());
-  const latest = useRef({ model, options, onSelect, onAreasLoaded });
-  latest.current = { model, options, onSelect, onAreasLoaded };
+  const latest = useRef({ model, options, onSelect, onAreasLoaded, theme });
+  latest.current = { model, options, onSelect, onAreasLoaded, theme };
 
   // Create the map once.
   useEffect(() => {
@@ -90,6 +113,8 @@ export function MapView({ model, geo, options, outline, selection, onSelect, are
       minZoom: 6,
       maxZoom: 15,
       attributionControl: false,
+      cooperativeGestures: COARSE,
+      locale: he.mapControls,
       dragRotate: false,
       pitchWithRotate: false,
     });
@@ -98,7 +123,7 @@ export function MapView({ model, geo, options, outline, selection, onSelect, are
     mapRef.current = map;
 
     map.on('load', () => {
-      map.addImage('hatch', hatchImage());
+      map.addImage('hatch', hatchImage(latest.current.theme));
       const empty: FC = { type: 'FeatureCollection', features: [] };
       for (const id of ['munis', 'locs', 'areas', 'nojur', 'points']) {
         map.addSource(id, { type: 'geojson', data: empty, promoteId: 'id' });
@@ -175,6 +200,7 @@ export function MapView({ model, geo, options, outline, selection, onSelect, are
         id: 'sel-points', type: 'circle', source: 'points', filter: ['==', ['get', 'id'], '__none__'],
         paint: { 'circle-radius': 8, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#111', 'circle-stroke-width': 2.5 },
       });
+      applyTheme(map, latest.current.theme);
       setReady(true);
     });
 
@@ -211,6 +237,8 @@ export function MapView({ model, geo, options, outline, selection, onSelect, are
     map.on('click', (e) => {
       const p = pick(e.point);
       if (p) latest.current.onSelect({ ...p, fly: false });
+      // no hover on touch screens: show the tooltip where the finger tapped
+      if (COARSE) setHover(p ? { x: e.point.x, y: e.point.y, ...p } : null);
     });
 
     // Lazy-load neighborhood geometry (per city) and neighborhood results once zoomed in.
@@ -274,6 +302,13 @@ export function MapView({ model, geo, options, outline, selection, onSelect, are
     if (!map || !ready) return;
     map.setLayoutProperty('outline', 'visibility', outline ? 'visible' : 'none');
   }, [ready, outline]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    applyTheme(map, theme);
+    map.updateImage('hatch', hatchImage(theme));
+  }, [ready, theme]);
 
   // Highlight and fly to the selection.
   useEffect(() => {

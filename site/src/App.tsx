@@ -8,6 +8,8 @@ import { UnitTable } from './components/UnitTable';
 import { he } from './i18n/he';
 import { loadCore, loadGeo, type Geo } from './lib/data';
 import { buildModel, type Model } from './lib/model';
+import { unitRows } from './lib/rows';
+import { useTheme } from './lib/theme';
 import type { ColorMode, Selection, View } from './lib/types';
 import { MapView } from './map/MapView';
 
@@ -37,6 +39,7 @@ export function App() {
   const [table, setTable] = useState(false);
   const [outline, setOutline] = useState(false);
   const [areasVersion, setAreasVersion] = useState(0);
+  const [theme, setTheme] = useTheme();
 
   useEffect(() => {
     Promise.all([loadCore(), loadGeo()])
@@ -77,7 +80,7 @@ export function App() {
     if (v !== 'compare' && (mode === 'partySwing' || mode === 'blocSwing')) setMode('winner');
   };
 
-  const options = useMemo(() => ({ view, mode, swingTarget, blocTarget }), [view, mode, swingTarget, blocTarget]);
+  const options = useMemo(() => ({ view, mode, swingTarget, blocTarget, theme }), [view, mode, swingTarget, blocTarget, theme]);
 
   if (error) return <p className="fatal">{he.loadError}</p>;
   if (!model || !geo) return <p className="loading">{he.loading}</p>;
@@ -95,7 +98,7 @@ export function App() {
           {he.mockBanner}
         </div>
       )}
-      <Header meta={model.meta} view={view} onView={onView} />
+      <Header meta={model.meta} view={view} onView={onView} theme={theme} onTheme={setTheme} />
       <main id="main" className="layout">
         <SidePanel model={model} view={notPublished ? '25' : view} selection={selection} onSelect={setSelection} />
         <section className="map-col" aria-label={he.modes.label}>
@@ -134,6 +137,7 @@ export function App() {
                 <>
                   <MapView
                     model={model}
+                    theme={theme}
                     geo={geo}
                     options={options}
                     outline={outline}
@@ -142,7 +146,21 @@ export function App() {
                     areasVersion={areasVersion}
                     onAreasLoaded={() => setAreasVersion((v) => v + 1)}
                   />
-                  <Legend model={model} view={view} mode={mode} />
+                  <Legend model={model} view={view} mode={mode} theme={theme} />
+                  {selection && selection.level !== 'national' && (
+                    <button
+                      type="button"
+                      className="btn to-details"
+                      onClick={() => document.getElementById('panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    >
+                      {he.toDetails(
+                        unitRows(model, view, selection.level, selection.id).unit?.name ??
+                          unitRows(model, '25', selection.level, selection.id).unit?.name ??
+                          selection.id,
+                      )}{' '}
+                      <span aria-hidden="true">↓</span>
+                    </button>
+                  )}
                 </>
               )}
             </>

@@ -1,9 +1,8 @@
 import { he } from '../i18n/he';
 import { fmtInt, fmtNum1, fmtPct } from '../lib/format';
-import { breadcrumbs, results, withdrawnLists, type Model } from '../lib/model';
+import { breadcrumbs, nationalSeats, results, withdrawnLists, type Model } from '../lib/model';
 import { BallotChip } from './BallotChip';
 import { unitRows } from '../lib/rows';
-import { allocate } from '../lib/seats';
 import type { Selection, View } from '../lib/types';
 import { BlocTotals } from './BlocTotals';
 import { PartyTable } from './PartyTable';
@@ -26,7 +25,7 @@ export function SidePanel({ model, view, selection, onSelect }: Props) {
   const fallback = data.unit ?? unitRows(model, '25', sel.level, sel.id).unit;
 
   return (
-    <aside className="panel" aria-label={he.breadcrumbs}>
+    <aside className="panel" id="panel" aria-label={he.breadcrumbs}>
       <nav aria-label={he.breadcrumbs} className="crumbs">
         <ol>
           {crumbs.map((c, i) => (
@@ -64,7 +63,12 @@ export function SidePanel({ model, view, selection, onSelect }: Props) {
           {sel.level === 'national' && <National model={model} view={view} />}
           <section aria-labelledby="parties-h">
             <h3 id="parties-h">{he.summary.parties}</h3>
-            <PartyTable model={model} data={data} />
+            <PartyTable
+              model={model}
+              data={data}
+              seats={sel.level === 'national' ? nationalSeats(model, e) : null}
+              seats22={sel.level === 'national' && view === 'compare' ? nationalSeats(model, '25') : null}
+            />
           </section>
           <BlocTotals model={model} election={e} unit={data.unit} swing={data.swing} />
           {sel.level === 'municipality' && data.unit.localities && data.unit.localities.length > 1 && (
@@ -93,7 +97,7 @@ function National({ model, view }: { model: Model; view: View }) {
   const r = results(model, e);
   if (!r) return null;
   const partial = model.meta.elections[e].status === 'partial';
-  const seats = partial ? allocate(r.national.votes, model.parties.surplus[`k${e}`] ?? []) : r.seats;
+  const seats = nationalSeats(model, e) ?? {};
   return (
     <>
       <SeatChart model={model} election={e} seats={seats} caption={partial ? he.summary.seatsProjected : he.summary.seats} />

@@ -1,9 +1,10 @@
 import { he } from '../i18n/he';
 import { party, results, type Model } from '../lib/model';
 import { SWING_STOPS, swingColor, TURNOUT_RANGE, turnoutColor } from '../lib/scales';
+import type { Theme } from '../lib/theme';
 import type { ColorMode, View } from '../lib/types';
 
-export function Legend({ model, view, mode }: { model: Model; view: View; mode: ColorMode }) {
+export function Legend({ model, view, mode, theme }: { model: Model; view: View; mode: ColorMode; theme: Theme }) {
   const e = view === '25' ? '25' : '26';
   return (
     <div className="legend" aria-label={he.legend.title}>
@@ -12,7 +13,7 @@ export function Legend({ model, view, mode }: { model: Model; view: View; mode: 
         <div>
           <div className="ramp" aria-hidden="true">
             {SWING_STOPS.map((s) => (
-              <span key={s} style={{ background: swingColor(s) }} />
+              <span key={s} style={{ background: swingColor(s, theme) }} />
             ))}
           </div>
           <div className="ramp-labels">
@@ -31,7 +32,7 @@ export function Legend({ model, view, mode }: { model: Model; view: View; mode: 
         <div>
           <div className="ramp" aria-hidden="true">
             {[0, 0.25, 0.5, 0.75, 1].map((t) => (
-              <span key={t} style={{ background: turnoutColor(TURNOUT_RANGE[0] + t * (TURNOUT_RANGE[1] - TURNOUT_RANGE[0])) }} />
+              <span key={t} style={{ background: turnoutColor(TURNOUT_RANGE[0] + t * (TURNOUT_RANGE[1] - TURNOUT_RANGE[0]), theme) }} />
             ))}
           </div>
           <div className="ramp-labels">

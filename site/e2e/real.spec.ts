@@ -40,3 +40,26 @@ test('search finds a locality despite hyphen and final-letter differences', asyn
   await expect(page.locator('.unit-title')).toHaveText('תל אביב-יפו');
   await expect(page.locator('.crumbs')).toContainText('ארצי');
 });
+
+test('dark mode toggle applies and persists', async ({ page }) => {
+  await page.goto('/');
+  const toggle = page.getByRole('button', { name: 'מצב כהה' });
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await toggle.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(bg).toBe('rgb(18, 18, 17)');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.getByRole('button', { name: 'מצב כהה' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('national party table shows seats next to each party', async ({ page }) => {
+  await page.goto('/');
+  const table = page.locator('.party-table').first();
+  await expect(table.locator('thead')).toContainText('מנדטים');
+  await expect(table.locator('tr', { hasText: 'הליכוד' }).locator('.seats')).toHaveText('32');
+  await expect(table.locator('tr', { hasText: 'יש עתיד' }).locator('.seats')).toHaveText('24');
+  // below the threshold: a dash, not 0
+  await expect(table.locator('tr', { hasText: 'מרצ' }).locator('td').first()).toHaveText('—');
+});

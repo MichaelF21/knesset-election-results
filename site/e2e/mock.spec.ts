@@ -56,3 +56,27 @@ test('table view lists units and sorts', async ({ page }) => {
   await rows.first().getByRole('button').click();
   await expect(page.locator('.unit-title')).not.toHaveText('ארצי');
 });
+
+test('comparison seats show the change against 2022 predecessors', async ({ page }) => {
+  const row = page.locator('.party-table').first().locator('tr', { hasText: 'הדמוקרטים' });
+  await expect(row.locator('.seats')).toBeVisible();
+  await expect(row.locator('.seats-delta')).toBeVisible(); // vs. 2022 אמת + מרצ (4 + 0)
+});
+
+test.describe('mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test('fits the screen, tap selects a unit, button jumps to details', async ({ page }) => {
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    await page.locator('.map').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1500); // let the map draw its sources before tapping
+    const box = (await page.locator('.map').boundingBox())!;
+    await page.touchscreen.tap(box.x + box.width * 0.42, box.y + box.height * 0.42);
+    const details = page.locator('.to-details');
+    await expect(details).toBeVisible();
+    await expect(page.locator('.tooltip')).toBeVisible();
+    await details.click();
+    await expect(page.locator('.unit-title')).toBeInViewport();
+    await expect(page.locator('.unit-title')).not.toHaveText('ארצי');
+  });
+});

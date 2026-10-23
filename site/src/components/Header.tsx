@@ -1,5 +1,6 @@
 import { he } from '../i18n/he';
 import { fmtNum1, fmtTime } from '../lib/format';
+import type { Theme } from '../lib/theme';
 import type { Meta, View } from '../lib/types';
 
 export function StatusChip({ meta, view }: { meta: Meta; view: View }) {
@@ -15,7 +16,7 @@ export function StatusChip({ meta, view }: { meta: Meta; view: View }) {
   );
 }
 
-export function Header({ meta, view, onView }: { meta: Meta; view: View; onView: (v: View) => void }) {
+export function Header({ meta, view, onView, theme, onTheme }: { meta: Meta; view: View; onView: (v: View) => void; theme: Theme; onTheme: (t: Theme) => void }) {
   const options: { v: View; label: string }[] = [
     { v: '25', label: he.election.k25 },
     { v: '26', label: he.election.k26 },
@@ -52,6 +53,15 @@ export function Header({ meta, view, onView }: { meta: Meta; view: View; onView:
           ))}
         </div>
         <StatusChip meta={meta} view={view} />
+        <button
+          type="button"
+          className="theme-toggle"
+          aria-pressed={theme === 'dark'}
+          onClick={() => onTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
+          <span className="theme-label">{he.theme.dark}</span>
+        </button>
       </div>
     </header>
   );

@@ -37,7 +37,7 @@ export function SeatChart({ model, election, seats, caption }: { model: Model; e
       <figcaption>{caption}</figcaption>
       <svg viewBox="0 0 220 116" role="img" aria-label={list.map((x) => `${x.p?.short_name ?? x.letters} ${x.n}`).join(', ')}>
         {pos.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={3.6} fill={colors[i]?.color ?? '#ddd'} stroke="#fff" strokeWidth={0.8}>
+          <circle key={i} cx={p.x} cy={p.y} r={3.6} fill={colors[i]?.color ?? '#ddd'} className="seat-dot" strokeWidth={0.8}>
             <title>{colors[i] ? `${party(model, election, colors[i].letters)?.short_name ?? colors[i].letters}` : ''}</title>
           </circle>
         ))}

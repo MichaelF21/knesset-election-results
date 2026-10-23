@@ -95,6 +95,8 @@ export const he = {
     winner: 'מפלגה מובילה',
     margin: 'פער',
     votes: 'קולות',
+    seats: 'מנדטים',
+    seatsChange: 'שינוי לעומת 2022 (לפי שושלת הרשימות)',
     share: 'אחוז',
     swing: 'תנודה',
     share22: '2022',
@@ -135,6 +137,20 @@ export const he = {
     rows: (n: string) => `${n} שורות`,
   },
   mapLabel: 'מפת תוצאות הבחירות',
+  // MapLibre's built-in control and gesture texts
+  mapControls: {
+    'NavigationControl.ZoomIn': 'הגדלה',
+    'NavigationControl.ZoomOut': 'הקטנה',
+    'NavigationControl.ResetBearing': 'איפוס כיוון לצפון',
+    'CooperativeGesturesHandler.MobileHelpText': 'הזיזו את המפה בשתי אצבעות',
+    'CooperativeGesturesHandler.WindowsHelpText': 'לחצו Ctrl וגללו כדי להגדיל את המפה',
+    'CooperativeGesturesHandler.MacHelpText': 'לחצו ⌘ וגללו כדי להגדיל את המפה',
+    'Map.Title': 'מפה',
+  } as Record<string, string>,
+  theme: {
+    dark: 'מצב כהה',
+  },
+  toDetails: (name: string) => `${name} — לפרטים המלאים`,
   tooltip: {
     top3: 'שלוש המובילות',
   },

@@ -1,5 +1,6 @@
 // Joins results, party metadata and lineage into what the UI shows for any unit.
 import { he } from '../i18n/he';
+import { allocate } from './seats';
 import { blocOf, partySwingValue, unitSwing, type UnitSwing } from './swing';
 import type { BlocDefs, ElectionKey, LineageEntry, Level, Meta, PartiesFile, PartyInfo, Results, Unit, Votes } from './types';
 
@@ -125,6 +126,20 @@ export function swingTargets(m: Model): { value: string; label: string }[] {
     out.push({ value: `family:${src}`, label: he.modes.family(names) });
   }
   return out;
+}
+
+/** National seats: official for final results, projected from counted votes while partial. */
+export function nationalSeats(m: Model, e: ElectionKey): Record<string, number> | null {
+  const r = results(m, e);
+  if (!r) return null;
+  return m.meta.elections[e].status === 'partial' ? allocate(r.national.votes, m.parties.surplus[`k${e}`] ?? []) : r.seats;
+}
+
+/** 2022 seats of a 2026 list's predecessors (continuing / merger lists only). */
+export function predecessorSeats(m: Model, letters: string, seats22: Record<string, number>): number | null {
+  const l = m.p26[letters]?.lineage;
+  if (!l || !['continuing', 'merger_existing_existing', 'merger_existing_new'].includes(l.kind)) return null;
+  return (l.predecessors ?? []).reduce((t, p) => t + (seats22[p] ?? 0), 0);
 }
 
 /** 2026 lists that withdrew after approval (lineage kind "withdrawn"). */
