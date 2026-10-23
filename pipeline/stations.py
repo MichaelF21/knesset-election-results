@@ -25,9 +25,9 @@ NOMINATIM = "https://nominatim.openstreetmap.org/search"
 STATION_GEOCODING = os.environ.get("STATION_GEOCODING") == "1"
 
 
-def govmap_areas(election: int) -> dict | None:
-    """{area id: {'city': code, 'votes': {...}, 'valid': n, ...}} from GovMap, or None if unpublished."""
-    d = govmap_dir(election)
+def govmap_areas(election: int, mock: bool = False) -> dict | None:
+    """GovMap neighborhood results ({'parties', 'features', 'totals'}), or None if unpublished."""
+    d = L.DATA / "mock" / "govmap" / str(election) if mock else govmap_dir(election)
     data_path = d / "neighborhood_data.json"
     if not data_path.exists():
         return None

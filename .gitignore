@@ -10,3 +10,5 @@ data/raw/geo/*
 !data/raw/geo/README.md
 site/public/data/mock/
 data/build/
+data/mock/
+site/mock-data/
