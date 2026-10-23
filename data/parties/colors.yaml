@@ -2,21 +2,21 @@
 # (letters are reused across elections, so each election has its own map).
 # A continuing party keeps its 2022 color in 2026. Lists not named here get a neutral grey.
 # Checked by tests/test_colors.py: parties that win units on the map must be distinguishable
-# (CIEDE2000 ≥ 15), and every color gets a black or white label with WCAG AA contrast (≥ 4.5).
+# (CIEDE2000 ≥ 12 for parties whose units touch, plus the dataviz CVD validator), and every color gets a black or white label with WCAG AA contrast (≥ 4.5).
 default: "#9aa0a6"
 k25:
   מחל: "#1c3faa"   # הליכוד
   פה: "#2fb4e6"    # יש עתיד
   ט: "#f08c00"     # הציונות הדתית
-  כן: "#b197fc"    # המחנה הממלכתי
+  כן: "#7048e8"    # המחנה הממלכתי
   שס: "#0b7a4b"    # ש"ס
   ג: "#2b2b2b"     # יהדות התורה
   ל: "#c2255c"     # ישראל ביתנו
   עם: "#94d82d"    # רע"ם
-  ום: "#a0522d"    # חד"ש-תע"ל
+  ום: "#5c940d"    # חד"ש-תע"ל
   אמת: "#e03131"   # העבודה
-  מרצ: "#38d9a9"   # מרצ
-  ד: "#862e9c"     # בל"ד
+  מרצ: "#3bc9db"   # מרצ
+  ד: "#f783ac"     # בל"ד
   ב: "#d4b106"     # הבית היהודי
   אצ: "#748ffc"    # חופש כלכלי
   קץ: "#adb5bd"
@@ -29,12 +29,12 @@ k26:
   ט: "#f08c00"     # הציונות הדתית וזהות
   ב: "#f5c518"     # עוצמה יהודית
   ני: "#fcc2d7"    # נעם
-  דרך: "#b197fc"   # ישר!
+  דרך: "#7048e8"   # ישר!
   שס: "#0b7a4b"    # ש"ס
   ג: "#2b2b2b"     # יהדות התורה
   ל: "#c2255c"     # ישראל ביתנו
   עם: "#94d82d"    # רע"ם
-  ודם: "#a0522d"   # הרשימה המשותפת
+  ודם: "#5c940d"   # הרשימה המשותפת
   אמת: "#e03131"   # הדמוקרטים
   די: "#12b886"    # המילואימניקים והכלכלית
   פה: "#ced4da"    # אני ואתה

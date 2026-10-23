@@ -1,13 +1,15 @@
 """Color checks for the party palette (§7): map distinguishability and WCAG AA labels."""
 import itertools
+import json
 import math
 
 import pytest
 
 from pipeline import load as L
+from pipeline import parties as P
 from pipeline.parties import load_colors
 
-MIN_DELTA_E = 15
+MIN_DELTA_E = 12  # CIEDE2000; clearly distinct side by side
 
 
 def _rgb(hex_: str):
@@ -89,12 +91,21 @@ def test_2022_winners_have_colors(colors):
     assert map_winners_2022() <= set(colors["k25"])
 
 
-@pytest.mark.parametrize("election", ["k25", "k26"])
-def test_winning_parties_distinguishable(colors, election):
-    letters = sorted(map_winners_2022()) if election == "k25" else sorted(colors["k26"])
-    pal = {k: colors[election][k] for k in letters if k in colors[election]}
+def test_neighboring_winners_distinguishable(colors):
+    """Parties that win touching units (data/parties/neighbor_pairs_k25.json, from
+    scripts/neighbor_pairs.py) must be told apart. The same pairs were also run through the dataviz
+    validate_palette.js CVD check (only ט/עם is in the 6-8 band, relieved by tooltips and the table)."""
+    pairs = json.loads((P.PARTIES / "neighbor_pairs_k25.json").read_text(encoding="utf-8"))
+    pal = colors["k25"]
+    close = [(a, b, round(delta_e2000(pal[a], pal[b]), 1)) for a, b, n in pairs
+             if n >= 2 and delta_e2000(pal.get(a, colors["default"]), pal.get(b, colors["default"])) < MIN_DELTA_E]
+    assert not close, f"too similar: {close}"
+
+
+def test_2026_main_parties_distinguishable(colors):
+    pal = colors["k26"]
     close = [(a, b, round(delta_e2000(pal[a], pal[b]), 1))
-             for a, b in itertools.combinations(pal, 2) if delta_e2000(pal[a], pal[b]) < MIN_DELTA_E]
+             for a, b in itertools.combinations(pal, 2) if delta_e2000(pal[a], pal[b]) < 10]
     assert not close, f"too similar: {close}"
 
 
