@@ -18,6 +18,11 @@ export interface PaintOptions {
 }
 
 const NODATA: Paint = { fill: '#d9d9d6', op: 1, nodata: true };
+// 2026 tab before any results: one flat neutral color, not the "no data" hatching
+const PENDING: Record<Theme, Paint> = {
+  light: { fill: '#d6d5cf', op: 1, nodata: false },
+  dark: { fill: '#3a3a36', op: 1, nodata: false },
+};
 
 export function shownElection(view: View): ElectionKey {
   return view === '25' ? '25' : '26';
@@ -31,6 +36,7 @@ export function paintUnit(m: Model, level: Level, id: string, o: PaintOptions): 
     return v === null ? NODATA : { fill: swingColor(v, o.theme), op: 1, nodata: false };
   }
   const e = shownElection(o.view);
+  if (e === '26' && !m.r26) return PENDING[o.theme];
   const u = unitOf(results(m, e), level, id);
   if (!u || !u.valid) return NODATA;
   if (o.mode === 'turnout') {

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CandidateLists } from './components/CandidateLists';
 import { Controls } from './components/Controls';
 import { Header } from './components/Header';
 import { Legend } from './components/Legend';
@@ -134,6 +133,8 @@ export function App() {
   if (!model || !geo) return <p className="loading">{he.loading}</p>;
 
   const notPublished = view !== '25' && !model.r26;
+  // 2026 tab before results: running lists in the panel, a neutral map in the main column
+  const awaiting26 = view === '26' && !model.r26;
   const mock = model.meta.elections['26']?.mock;
 
   return (
@@ -150,32 +151,46 @@ export function App() {
       <main id="main" className="layout">
         <SidePanel
           model={model}
-          view={notPublished ? '25' : view}
-          note={notPublished ? he.empty.panelNote : undefined}
+          view={notPublished && !awaiting26 ? '25' : view}
+          note={notPublished && !awaiting26 ? he.empty.panelNote : undefined}
           selection={selection}
           onSelect={setSelection}
         />
         <section className="map-col" aria-label={he.modes.label}>
           <div className="toolbar">
             <SearchBox model={model} onSelect={setSelection} />
-            <button type="button" className="btn" aria-pressed={table} onClick={() => setTable(!table)}>
-              {table ? he.table.showMap : he.table.show}
-            </button>
+            {!awaiting26 && (
+              <button type="button" className="btn" aria-pressed={table} onClick={() => setTable(!table)}>
+                {table ? he.table.showMap : he.table.show}
+              </button>
+            )}
           </div>
-          {notPublished ? (
+          {awaiting26 ? (
             <>
-              <div className={`empty-state${view === '26' ? ' compact' : ''}`} role="status">
-                <h2>{he.empty.title}</h2>
-                <p>
-                  {view === 'compare' ? he.empty.compareBody : he.empty.body}
-                  {view === '26' && ` ${he.empty.listsBelow}`}
-                </p>
-                <button type="button" className="btn" onClick={() => onView('25')}>
-                  {he.empty.show25}
-                </button>
-              </div>
-              {view === '26' && <CandidateLists model={model} />}
+              <p className="note awaiting-note" role="status">
+                <strong>{he.empty.title}.</strong> {he.empty.mapNote}
+              </p>
+              <MapView
+                model={model}
+                theme={theme}
+                geo={geo}
+                options={options}
+                outline={outline}
+                selection={selection}
+                onSelect={setSelection}
+                areasVersion={areasVersion}
+                onAreasLoaded={onAreasLoaded}
+              />
+              <Legend model={model} view={view} mode={mode} theme={theme} />
             </>
+          ) : notPublished ? (
+            <div className="empty-state" role="status">
+              <h2>{he.empty.title}</h2>
+              <p>{he.empty.compareBody}</p>
+              <button type="button" className="btn" onClick={() => onView('25')}>
+                {he.empty.show25}
+              </button>
+            </div>
           ) : (
             <>
               <Controls

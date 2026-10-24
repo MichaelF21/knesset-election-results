@@ -6,6 +6,15 @@ import type { ColorMode, View } from '../lib/types';
 
 export function Legend({ model, view, mode, theme }: { model: Model; view: View; mode: ColorMode; theme: Theme }) {
   const e = view === '25' ? '25' : '26';
+  if (e === '26' && !model.r26) {
+    return (
+      <div className="legend" aria-label={he.legend.title}>
+        <div className="legend-nodata">
+          <span className="swatch swatch-pending" aria-hidden="true" /> {he.legend.pending}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="legend" aria-label={he.legend.title}>
       {mode === 'winner' && <WinnerLegend model={model} e={e} />}

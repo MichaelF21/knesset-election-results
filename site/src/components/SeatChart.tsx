@@ -3,13 +3,14 @@ import { party, type Model } from '../lib/model';
 import type { ElectionKey } from '../lib/types';
 
 /** Half-circle parliament chart: 120 seats in rows, parties ordered by bloc then size. */
-export function SeatChart({ model, election, seats, caption }: { model: Model; election: ElectionKey; seats: Record<string, number>; caption: string }) {
+export function SeatChart({ model, election, seats, caption, empty = false }: { model: Model; election: ElectionKey; seats: Record<string, number>; caption: string; empty?: boolean }) {
   const order = model.blocs.order;
   const list = Object.entries(seats)
     .filter(([, n]) => n > 0)
     .map(([letters, n]) => ({ letters, n, p: party(model, election, letters) }))
     .sort((a, b) => order.indexOf(a.p?.bloc ?? 'others') - order.indexOf(b.p?.bloc ?? 'others') || b.n - a.n);
-  const total = list.reduce((t, x) => t + x.n, 0);
+  // empty: 120 grey seats before any results
+  const total = empty ? 120 : list.reduce((t, x) => t + x.n, 0);
 
   // Seat positions: rows of increasing radius, seats per row proportional to radius.
   const rows = 6;
@@ -35,9 +36,9 @@ export function SeatChart({ model, election, seats, caption }: { model: Model; e
   return (
     <figure className="seat-chart">
       <figcaption>{caption}</figcaption>
-      <svg viewBox="0 0 220 116" role="img" aria-label={list.map((x) => `${x.p?.short_name ?? x.letters} ${x.n}`).join(', ')}>
+      <svg viewBox="0 0 220 116" role="img" aria-label={empty ? caption : list.map((x) => `${x.p?.short_name ?? x.letters} ${x.n}`).join(', ')}>
         {pos.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={3.6} fill={colors[i]?.color ?? '#ddd'} className="seat-dot" strokeWidth={0.8}>
+          <circle key={i} cx={p.x} cy={p.y} r={3.6} fill={colors[i]?.color ?? 'var(--soft-2)'} className="seat-dot" strokeWidth={0.8}>
             <title>{colors[i] ? `${party(model, election, colors[i].letters)?.short_name ?? colors[i].letters}` : ''}</title>
           </circle>
         ))}

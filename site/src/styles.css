@@ -196,18 +196,16 @@ button, input, select { font: inherit; color: inherit; }
 .empty-state h2 { font-size: 1.4rem; }
 .empty-state p { max-inline-size: 46ch; margin: 0; }
 
-.empty-state.compact { padding: 16px 20px; gap: 8px; }
 .panel-note { margin: 0 0 10px; padding-block: 6px; padding-inline: 10px; border-radius: var(--radius); background: var(--soft); font-weight: 700; font-size: 0.9rem; }
 
-/* Running lists (2026 tab before results) */
-.candidate-lists { display: grid; gap: 6px; }
-.candidate-lists > h2 { font-size: 1.25rem; font-weight: 800; }
-.candidate-lists p { margin: 0; }
-.candidate-lists h3 { font-size: 1rem; font-weight: 800; margin-block: 14px 8px; display: flex; align-items: center; gap: 2px; }
-.list-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
-.list-card { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
-.list-card .ballot { inline-size: 100%; }
-.surplus-list { margin: 0; padding-inline-start: 18px; display: grid; gap: 2px; }
+/* Running lists (2026 tab before results, side panel) */
+.candidate-lists p { margin: 0 0 4px; }
+.party-table .group-row th { padding-block: 12px 4px; font-weight: 800; font-size: 0.95rem; border-block-end: 2px solid var(--line); }
+.surplus-list { margin: 0; padding-inline-start: 18px; display: grid; gap: 2px; font-size: 0.9rem; }
+.awaiting-note { margin: 0; }
+.swatch-pending { background: #d6d5cf; }
+:root[data-theme='dark'] .swatch-pending { background: #3a3a36; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .swatch-pending { background: #3a3a36; } }
 
 /* Panel */
 .crumbs ol { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0 0 6px; padding: 0; font-size: 0.9rem; }

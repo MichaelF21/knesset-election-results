@@ -38,6 +38,7 @@ k26:
   אמת: "#e03131"   # הדמוקרטים
   די: "#12b886"    # המילואימניקים והכלכלית
   פה: "#ced4da"    # אני ואתה
+  ך: "#da77f2"     # עמך ישראל (passes the CVD check against every coalition party)
 blocs:
   coalition: "#1c3faa"
   opposition: "#2fb4e6"

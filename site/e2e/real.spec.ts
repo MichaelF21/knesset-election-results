@@ -14,10 +14,10 @@ test('2022 results load and 2026 shows the not-published state', async ({ page }
   await expect(page.getByRole('radio', { name: 'תנודה למפלגה' })).toBeDisabled();
 
   await page.getByRole('radio', { name: 'כנסת 26' }).click();
-  await expect(page.getByRole('heading', { name: 'טרם פורסמו תוצאות' })).toBeVisible();
+  await expect(page.locator('.awaiting-note')).toContainText('טרם פורסמו תוצאות');
   await expect(page.locator('.chip')).toHaveText('טרם פורסמו תוצאות');
-  await page.getByRole('button', { name: 'הצג את תוצאות כנסת 25' }).click();
   await expect(page.locator('.map canvas')).toBeVisible();
+  await page.getByRole('radio', { name: 'כנסת 25' }).click();
 
   // the comparison (swing) view shows the same notice instead of falling back to 2022
   await page.getByRole('radio', { name: 'השוואה' }).click();
@@ -64,20 +64,29 @@ test('national party table shows seats next to each party', async ({ page }) => 
   await expect(table.locator('tr', { hasText: 'מרצ' }).locator('td').first()).toHaveText('—');
 });
 
-test('2026 tab lists the running lists before results', async ({ page }) => {
+test('2026 tab: no results yet, the panel lists the running lists', async ({ page }) => {
   await page.goto('/#v=26');
-  const lists = page.locator('.candidate-lists');
+  const panel = page.locator('.panel');
+  // no 2022 numbers in the 2026 tab
+  await expect(page.locator('.panel-note')).toHaveCount(0);
+  await expect(panel.locator('.stats')).toHaveCount(0);
+  await expect(panel.locator('.seat-chart figcaption')).toHaveText('חלוקת המנדטים: טרם פורסמו תוצאות');
+  const lists = panel.locator('.candidate-lists');
   await expect(lists.getByRole('heading', { name: 'הרשימות המתמודדות' })).toBeVisible();
-  await expect(lists.locator('.list-group .list-card')).toHaveCount(37);
-  await expect(lists.locator('.list-group h3')).toHaveText([/גוש הקואליציה/, /גוש האופוזיציה/, /מפלגות ערביות/, /אחרות/]);
-  // lineage explained by name, with the 2022 strength
-  const dems = lists.locator('.list-card', { hasText: 'הדמוקרטים' });
+  await expect(lists.locator('tbody tr:not(.group-row)')).toHaveCount(37);
+  await expect(lists.locator('.group-row')).toHaveText([/גוש הקואליציה \(7\)/, /גוש האופוזיציה/, /מפלגות ערביות/, /אחרות/]);
+  // עמך ישראל is in the coalition bloc
+  const coalition = lists.locator('tbody').first();
+  await expect(coalition).toContainText('עמך ישראל');
+  // lineage explained by name, with the 2022 strength; results are dashes
+  const dems = lists.locator('tr', { hasText: 'הדמוקרטים' });
   await expect(dems).toContainText('איחוד של העבודה ומרצ');
   await expect(dems).toContainText('ב-2022: 6.9%');
-  await expect(lists.locator('.list-card', { hasText: 'עוצמה יהודית' }).first()).toContainText('כחלק מהרשימה המשותפת: 10.8%');
-  await expect(lists.locator('.list-card', { hasText: 'ישר!' })).toContainText('חדשה');
+  await expect(dems.locator('td')).toHaveText(['—', '—']);
+  await expect(lists.locator('tr', { hasText: 'עוצמה יהודית' }).first()).toContainText('כחלק מהרשימה המשותפת: 10.8%');
   await expect(lists).toContainText('הסכמי עודפים');
   await expect(lists).toContainText('כחול לבן');
-  // the side panel says its numbers are from 2022
-  await expect(page.locator('.panel-note')).toHaveText('תוצאות הכנסת ה-25 (2022), להשוואה');
+  // the map is there, in the neutral "awaiting results" state
+  await expect(page.locator('.map canvas')).toBeVisible();
+  await expect(page.locator('.legend')).toContainText('טרם פורסמו תוצאות');
 });

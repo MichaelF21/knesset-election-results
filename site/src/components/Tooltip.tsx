@@ -26,7 +26,9 @@ export function Tooltip({ model, options, level, id, x, y }: { model: Model; opt
         <span className="tt-level">{LEVEL[level]}</span>
       </div>
       {!unit || !unit.valid ? (
-        <div className="tt-muted">{election === '26' && model.r26 ? he.unit.notCounted : he.legend.noData}</div>
+        <div className="tt-muted">
+          {election === '26' ? (model.r26 ? he.unit.notCounted : he.status.notPublished) : he.legend.noData}
+        </div>
       ) : (
         <>
           {options.mode === 'partySwing' && swing && (

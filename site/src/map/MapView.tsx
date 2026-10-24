@@ -333,9 +333,11 @@ export function MapView({ model, theme, geo, options, outline, selection, onSele
       withPaint({ type: 'FeatureCollection', features: [...areaFeatures.current.values()].flat() }, 'area'),
     );
     if (geo.noJurisdiction) (map.getSource('nojur') as GeoJSONSource).setData(geo.noJurisdiction);
+    // before 2026 results every dot would be the same neutral grey: leave them out
+    const awaiting = options.view === '26' && !model.r26;
     (map.getSource('points') as GeoJSONSource).setData({
       type: 'FeatureCollection',
-      features: geo.points.map((p) => ({
+      features: (awaiting ? [] : geo.points).map((p) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
         properties: {

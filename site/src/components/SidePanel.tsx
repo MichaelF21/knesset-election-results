@@ -2,6 +2,7 @@ import { he } from '../i18n/he';
 import { fmtInt, fmtNum1, fmtPct } from '../lib/format';
 import { breadcrumbs, nationalSeats, results, withdrawnLists, type Model } from '../lib/model';
 import { BallotChip } from './BallotChip';
+import { CandidateLists } from './CandidateLists';
 import { unitRows } from '../lib/rows';
 import type { Selection, View } from '../lib/types';
 import { BlocTotals } from './BlocTotals';
@@ -25,6 +26,8 @@ export function SidePanel({ model, view, note, selection, onSelect }: Props) {
   const e = data.election;
   const meta = model.meta.elections[e];
   const fallback = data.unit ?? unitRows(model, '25', sel.level, sel.id).unit;
+  // the 2026 tab before any results: the running lists instead of numbers
+  const awaiting = e === '26' && !model.r26;
 
   return (
     <aside className="panel" id="panel" aria-label={he.breadcrumbs}>
@@ -47,7 +50,17 @@ export function SidePanel({ model, view, note, selection, onSelect }: Props) {
 
       <h2 className="unit-title">{sel.level === 'national' ? he.levels.national : (fallback?.name ?? sel.id)}</h2>
 
-      {!data.unit || !data.unit.valid ? (
+      {awaiting ? (
+        sel.level === 'national' ? (
+          <>
+            <p className="muted small">{he.lists.awaiting}</p>
+            <SeatChart model={model} election="26" seats={{}} caption={he.lists.seatsPending} empty />
+            <CandidateLists model={model} />
+          </>
+        ) : (
+          <p className="muted">{he.status.notPublished}</p>
+        )
+      ) : !data.unit || !data.unit.valid ? (
         <p className="muted">{e === '26' && model.r26 ? he.unit.notCounted : he.unit.noResults}</p>
       ) : (
         <>
