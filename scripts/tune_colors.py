@@ -45,7 +45,8 @@ TARGETS = {
         "ט": "#4f9298",    # Religious Zionist Party (joint list with Otzma Yehudit and Noam)
         "כן": "#00bbdf",   # National Unity
         "שס": "#000000",   # Shas
-        "ג": "#003366",    # United Torah Judaism
+        "ג": "#686868",    # United Torah Judaism: grey (user's choice, 24.10.2026; Wikipedia's UTJ navy is
+                           # too close to Likud blue; Degel HaTorah's own color is a dark grey)
         "ל": "#23c2eb",    # Yisrael Beiteinu
         "עם": "#15793d",   # Ra'am
         "ום": "#d42436",   # Hadash–Ta'al
@@ -90,6 +91,8 @@ TARGETS = {
     },
 }
 CONTINUING_KEEP = True  # continuing lists reuse their 2022 color
+# colors the user chose explicitly: kept exactly, the other parties adjust around them
+PINNED_25 = {"ג": "#686868"}  # United Torah Judaism: grey, to contrast with Likud (user, 24.10.2026)
 # 2026 lists likely to pass the threshold (2022 strength of their predecessors, or polling for new ones)
 MAJORS_26 = ["מחל", "רק", "דרך", "אמת", "שס", "ג", "ב", "ט", "ל", "עם", "ודם", "די"]
 LEADING_26 = ["מחל", "רק", "דרך", "אמת", "שס", "ב", "ודם", "עם"]
@@ -245,7 +248,8 @@ def main() -> None:
     # 2022: lists that won areas on the map, or had at least 1% nationally
     valid22 = sum(votes22.values())
     constrained22 = {x for pair in p22 for x in pair} | {k for k, v in votes22.items() if v >= 0.01 * valid22}
-    c22 = solve(TARGETS[25], p22, order22, {}, constrained22)
+    order22 = list(PINNED_25) + [k for k in order22 if k not in PINNED_25]
+    c22 = solve(TARGETS[25], p22, order22, dict(PINNED_25), constrained22)
 
     lineage = P.load_lineage()
     fixed26 = {}
