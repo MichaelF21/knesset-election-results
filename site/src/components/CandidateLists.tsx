@@ -71,7 +71,11 @@ export function CandidateLists({ model }: { model: Model }) {
                       {prev !== null && (
                         <span className="lineage-note">{prev < 0.05 ? he.lists.prevTiny : he.lists.prev(fmtPct(prev))}</span>
                       )}
-                      {split && <span className="lineage-note">{he.lists.prevJoint(fmtPct(jointShare(model, split)))}</span>}
+                      {split && (
+                        <span className="lineage-note">
+                          {he.lists.prevJoint(model.p25[split]?.short_name ?? split, fmtPct(jointShare(model, split)))}
+                        </span>
+                      )}
                     </th>
                     <td className="num muted" title={he.status.notPublished}>—</td>
                     <td className="num muted" title={he.status.notPublished}>—</td>

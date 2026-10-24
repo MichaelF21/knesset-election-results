@@ -1,46 +1,47 @@
-# Party colors, close to each party's own campaign color. Keyed by election and ballot letter
-# (letters are reused across elections, so each election has its own map).
-# A continuing party keeps its 2022 color in 2026. Lists not named here get a neutral grey.
-# Checked by tests/test_colors.py: parties that win units on the map must be distinguishable
-# (CIEDE2000 ≥ 12 for parties whose units touch, plus the dataviz CVD validator), and every color gets a black or white label with WCAG AA contrast (≥ 4.5).
+# Party colors, keyed by election and ballot letter (letters are reused across elections).
+# Each starts from the party's real color (Wikipedia's party-color data, which follows the parties'
+# branding) and is moved only as much as needed so that parties whose units touch on the map stay
+# distinguishable, also for color-blind viewers. Proposed by scripts/tune_colors.py (targets and
+# rules are there), checked by tests/test_colors.py. A continuing party keeps its 2022 color.
+# Lists not named here get a neutral grey.
 default: "#9aa0a6"
 k25:
-  מחל: "#1c3faa"   # הליכוד
-  פה: "#2fb4e6"    # יש עתיד
-  ט: "#f08c00"     # הציונות הדתית–עוצמה יהודית (joint list)
-  כן: "#7048e8"    # המחנה הממלכתי
-  שס: "#0b7a4b"    # ש"ס
-  ג: "#2b2b2b"     # יהדות התורה
-  ל: "#c2255c"     # ישראל ביתנו
-  עם: "#94d82d"    # רע"ם
-  ום: "#5c940d"    # חד"ש-תע"ל
-  אמת: "#e03131"   # העבודה
-  מרצ: "#3bc9db"   # מרצ
-  ד: "#f783ac"     # בל"ד
-  ב: "#d4b106"     # הבית היהודי
-  אצ: "#748ffc"    # חופש כלכלי
+  מחל: "#1f5aa5"  # הליכוד
+  פה: "#2fb4e6"  # יש עתיד
+  ט: "#5d888c"  # הציונות הדתית–עוצמה יהודית (joint list)
+  כן: "#8be4fd"  # המחנה הממלכתי
+  שס: "#0d0d0d"  # ש"ס
+  ג: "#003366"  # יהדות התורה
+  ל: "#228dcd"  # ישראל ביתנו
+  עם: "#15793d"  # רע"ם
+  ום: "#d42436"  # חד"ש-תע"ל
+  אמת: "#fd3233"  # העבודה
+  מרצ: "#40ae49"  # מרצ
+  ד: "#f1733d"  # בל"ד
+  ב: "#8dc63f"  # הבית היהודי
+  אצ: "#748ffc"  # חופש כלכלי
   קץ: "#adb5bd"
-  יז: "#20c997"    # הכלכלית החדשה
+  יז: "#feb414"  # הכלכלית החדשה
   צ: "#ff922b"
-  ז: "#0c8599"     # שחר
+  ז: "#177182"  # שחר
 k26:
-  מחל: "#1c3faa"   # הליכוד
-  רק: "#2fb4e6"    # ביחד (בנט + יש עתיד)
-  ט: "#f08c00"     # הציונות הדתית וזהות
-  ב: "#f5c518"     # עוצמה יהודית
-  ני: "#fcc2d7"    # נעם
-  דרך: "#7048e8"   # ישר!
-  שס: "#0b7a4b"    # ש"ס
-  ג: "#2b2b2b"     # יהדות התורה
-  ל: "#c2255c"     # ישראל ביתנו
-  עם: "#94d82d"    # רע"ם
-  ודם: "#5c940d"   # הרשימה המשותפת
-  אמת: "#e03131"   # הדמוקרטים
-  די: "#12b886"    # המילואימניקים והכלכלית
-  פה: "#ced4da"    # אני ואתה
-  ך: "#da77f2"     # עמך ישראל (passes the CVD check against every coalition party)
+  מחל: "#1f5aa5"  # הליכוד
+  רק: "#160a59"  # ביחד (בנט + יש עתיד)
+  ט: "#638f92"  # הציונות הדתית וזהות
+  ב: "#fe6a28"  # עוצמה יהודית
+  ני: "#00b2ef"  # נעם
+  דרך: "#84cbfc"  # ישר!
+  שס: "#0d0d0d"  # ש"ס
+  ג: "#003366"  # יהדות התורה
+  ל: "#228dcd"  # ישראל ביתנו
+  עם: "#15793d"  # רע"ם
+  ודם: "#01b2ac"  # הרשימה המשותפת
+  אמת: "#2406dc"  # הדמוקרטים
+  די: "#575819"  # המילואימניקים והכלכלית
+  פה: "#ced4da"  # אני ואתה
+  ך: "#8f36bf"  # עמך ישראל
 blocs:
-  coalition: "#1c3faa"
+  coalition: "#1f5aa5"
   opposition: "#2fb4e6"
-  arab: "#94d82d"
+  arab: "#15793d"
   others: "#9aa0a6"

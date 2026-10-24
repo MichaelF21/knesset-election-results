@@ -74,7 +74,7 @@ test('2026 tab: no results yet, the panel lists the running lists', async ({ pag
   const lists = panel.locator('.candidate-lists');
   await expect(lists.getByRole('heading', { name: 'הרשימות המתמודדות' })).toBeVisible();
   await expect(lists.locator('tbody tr:not(.group-row)')).toHaveCount(37);
-  await expect(lists.locator('.group-row')).toHaveText([/גוש הקואליציה \(7\)/, /גוש האופוזיציה/, /מפלגות ערביות/, /אחרות/]);
+  await expect(lists.locator('.group-row')).toHaveText([/גוש הקואליציה \(7\)/, /גוש האופוזיציה \(4\)/, /מפלגות ערביות/, /אחרות/]);
   // עמך ישראל is in the coalition bloc
   const coalition = lists.locator('tbody').first();
   await expect(coalition).toContainText('עמך ישראל');
@@ -83,10 +83,26 @@ test('2026 tab: no results yet, the panel lists the running lists', async ({ pag
   await expect(dems).toContainText('איחוד של העבודה ומרצ');
   await expect(dems).toContainText('ב-2022: 6.9%');
   await expect(dems.locator('td')).toHaveText(['—', '—']);
-  await expect(lists.locator('tr', { hasText: 'עוצמה יהודית' }).first()).toContainText('כחלק מהרשימה המשותפת: 10.8%');
+  await expect(lists.locator('tr', { hasText: 'עוצמה יהודית' }).first()).toContainText('ב-2022, כחלק מהציונות הדתית–עוצמה יהודית: 10.8%');
   await expect(lists).toContainText('הסכמי עודפים');
   await expect(lists).toContainText('כחול לבן');
   // the map is there, in the neutral "awaiting results" state
   await expect(page.locator('.map canvas')).toBeVisible();
   await expect(page.locator('.legend')).toContainText('טרם פורסמו תוצאות');
+});
+
+test('seat chart: pointing at a party highlights its seats', async ({ page }) => {
+  await page.goto('/');
+  const chart = page.locator('.seat-chart');
+  await expect(chart.locator('.seat-active')).toHaveText('הצביעו על מושב או על שם רשימה');
+  await chart.getByRole('button', { name: /הליכוד/ }).hover();
+  await expect(chart.locator('.seat-active')).toHaveText('הליכוד: 32 מנדטים');
+  await expect(chart.locator('.seat-total')).toHaveText('32');
+  await expect(chart.locator('.seat-dot.on')).toHaveCount(32);
+  await expect(chart).toHaveClass(/has-active/);
+  // pointing at a seat works too
+  await chart.locator('.seat-dot').last().hover();
+  await expect(chart.locator('.seat-active')).not.toHaveText('הליכוד: 32 מנדטים');
+  await page.mouse.move(5, 5);
+  await expect(chart.locator('.seat-total')).toHaveText('120');
 });

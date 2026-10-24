@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { he } from '../i18n/he';
 import { party, type Model } from '../lib/model';
 import type { ElectionKey } from '../lib/types';
 
-/** Half-circle parliament chart: 120 seats in rows, parties ordered by bloc then size. */
+/**
+ * Half-circle parliament chart: 120 seats in rows, parties ordered by bloc then size.
+ * Pointing at a seat or a legend entry (or focusing / tapping it) highlights that party's seats.
+ */
 export function SeatChart({ model, election, seats, caption, empty = false }: { model: Model; election: ElectionKey; seats: Record<string, number>; caption: string; empty?: boolean }) {
+  const [active, setActive] = useState<string | null>(null);
   const order = model.blocs.order;
   const list = Object.entries(seats)
     .filter(([, n]) => n > 0)
@@ -11,6 +16,7 @@ export function SeatChart({ model, election, seats, caption, empty = false }: { 
     .sort((a, b) => order.indexOf(a.p?.bloc ?? 'others') - order.indexOf(b.p?.bloc ?? 'others') || b.n - a.n);
   // empty: 120 grey seats before any results
   const total = empty ? 120 : list.reduce((t, x) => t + x.n, 0);
+  const current = list.find((x) => x.letters === active) ?? null;
 
   // Seat positions: rows of increasing radius, seats per row proportional to radius.
   const rows = 6;
@@ -33,25 +39,62 @@ export function SeatChart({ model, election, seats, caption, empty = false }: { 
   const colors: { color: string; letters: string }[] = [];
   for (const x of list) for (let i = 0; i < x.n; i++) colors.push({ color: x.p?.color ?? model.parties.default_color, letters: x.letters });
 
+  const point = (letters: string | null) => (empty ? undefined : () => setActive(letters));
+
   return (
-    <figure className="seat-chart">
+    <figure className={`seat-chart${current ? ' has-active' : ''}`} onMouseLeave={() => setActive(null)}>
       <figcaption>{caption}</figcaption>
       <svg viewBox="0 0 220 116" role="img" aria-label={empty ? caption : list.map((x) => `${x.p?.short_name ?? x.letters} ${x.n}`).join(', ')}>
-        {pos.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={3.6} fill={colors[i]?.color ?? 'var(--soft-2)'} className="seat-dot" strokeWidth={0.8}>
-            <title>{colors[i] ? `${party(model, election, colors[i].letters)?.short_name ?? colors[i].letters}` : ''}</title>
-          </circle>
-        ))}
-        <text x="110" y="104" textAnchor="middle" className="seat-total">
-          {total}
+        {pos.map((p, i) => {
+          const letters = colors[i]?.letters ?? null;
+          return (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={3.6}
+              fill={colors[i]?.color ?? 'var(--soft-2)'}
+              className={`seat-dot${current && letters === active ? ' on' : ''}`}
+              strokeWidth={0.8}
+              onMouseEnter={point(letters)}
+              onClick={point(letters === active ? null : letters)}
+            >
+              <title>{letters ? `${party(model, election, letters)?.short_name ?? letters}` : ''}</title>
+            </circle>
+          );
+        })}
+        <text x="110" y="104" textAnchor="middle" className="seat-total" style={current ? { fill: current.p?.color } : undefined}>
+          {current ? current.n : total}
         </text>
       </svg>
+      {!empty && (
+        <p className="seat-active" aria-live="polite">
+          {current ? (
+            <>
+              <span className="dot" style={{ background: current.p?.color }} aria-hidden="true" />
+              {he.summary.seatHover(current.p?.short_name ?? current.letters, current.n)}
+            </>
+          ) : (
+            <span className="muted">{he.summary.seatHint}</span>
+          )}
+        </p>
+      )}
       <ul className="seat-legend">
         {list.map((x) => (
           <li key={x.letters}>
-            <span className="dot" style={{ background: x.p?.color }} aria-hidden="true" />
-            <span>{x.p?.short_name ?? x.letters}</span>
-            <strong>{x.n}</strong>
+            <button
+              type="button"
+              className={`seat-legend-item${x.letters === active ? ' on' : ''}`}
+              onMouseEnter={point(x.letters)}
+              onFocus={point(x.letters)}
+              onBlur={point(null)}
+              onClick={point(x.letters === active ? null : x.letters)}
+              aria-pressed={x.letters === active}
+            >
+              <span className="dot" style={{ background: x.p?.color }} aria-hidden="true" />
+              <span>{x.p?.short_name ?? x.letters}</span>
+              <strong>{x.n}</strong>
+            </button>
           </li>
         ))}
       </ul>

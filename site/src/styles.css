@@ -266,8 +266,13 @@ button, input, select { font: inherit; color: inherit; }
 .seat-chart svg { inline-size: 100%; max-inline-size: 420px; display: block; margin-inline: auto; }
 .seat-total { font-size: 18px; font-weight: 800; fill: var(--ink); }
 .seat-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; list-style: none; padding: 0; margin: 6px 0 0; font-size: 0.85rem; }
-.seat-legend li { display: inline-flex; align-items: center; gap: 2px; }
+.seat-legend li { display: inline-flex; }
+.seat-legend-item { display: inline-flex; align-items: center; gap: 2px; background: none; border: 0; padding: 2px 4px; border-radius: 4px; cursor: pointer; }
+.seat-legend-item:hover, .seat-legend-item.on { background: var(--soft); }
 .seat-legend strong { margin-inline-start: 3px; }
+.seat-dot { cursor: pointer; transition: opacity 120ms; }
+.seat-chart.has-active .seat-dot:not(.on) { opacity: 0.18; }
+.seat-active { margin: 4px 0 0; min-block-size: 1.45em; text-align: center; font-weight: 700; font-size: 0.92rem; }
 
 /* Table view */
 .unit-table { display: flex; flex-direction: column; gap: 8px; min-block-size: 480px; }

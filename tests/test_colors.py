@@ -91,22 +91,39 @@ def test_2022_winners_have_colors(colors):
     assert map_winners_2022() <= set(colors["k25"])
 
 
-def test_neighboring_winners_distinguishable(colors):
-    """Parties that win touching units (data/parties/neighbor_pairs_k25.json, from
-    scripts/neighbor_pairs.py) must be told apart. The same pairs were also run through the dataviz
-    validate_palette.js CVD check (only ט/עם is in the 6-8 band, relieved by tooltips and the table)."""
-    pairs = json.loads((P.PARTIES / "neighbor_pairs_k25.json").read_text(encoding="utf-8"))
-    pal = colors["k25"]
-    close = [(a, b, round(delta_e2000(pal[a], pal[b]), 1)) for a, b, n in pairs
-             if n >= 2 and delta_e2000(pal.get(a, colors["default"]), pal.get(b, colors["default"])) < MIN_DELTA_E]
-    assert not close, f"too similar: {close}"
+def _violations(pal: dict, pairs: dict, default: str) -> list:
+    from scripts.tune_colors import MIN_ANY_OK, cvd_de, ok_de, ok_pair
+
+    bad = []
+    for a, b in itertools.combinations(pal, 2):
+        strength = pairs.get(frozenset((a, b)))
+        if not ok_pair(pal[a], pal[b], strength):
+            bad.append((a, b, round(ok_de(pal[a], pal[b]), 1), round(cvd_de(pal[a], pal[b]), 1),
+                        "neighbors" if strength else f"legend (< {MIN_ANY_OK})"))
+    return bad
 
 
-def test_2026_main_parties_distinguishable(colors):
-    pal = colors["k26"]
-    close = [(a, b, round(delta_e2000(pal[a], pal[b]), 1))
-             for a, b in itertools.combinations(pal, 2) if delta_e2000(pal[a], pal[b]) < 10]
-    assert not close, f"too similar: {close}"
+def test_2022_neighbors_distinguishable(colors):
+    """Parties whose units touch (data/parties/neighbor_pairs_k25.json) clear the dataviz validator's
+    thresholds, normal vision and simulated color blindness (rules in scripts/tune_colors.py)."""
+    from scripts.tune_colors import pairs_2022
+
+    bad = _violations(colors["k25"], pairs_2022(), colors["default"])
+    assert not bad, f"too similar: {bad}"
+
+
+def test_2026_neighbors_distinguishable(colors):
+    from scripts.tune_colors import pairs_2022, pairs_2026
+
+    bad = _violations(colors["k26"], pairs_2026(pairs_2022()), colors["default"])
+    assert not bad, f"too similar: {bad}"
+
+
+def test_continuing_parties_keep_their_color(colors):
+    lin = P.load_lineage()
+    for e in lin.running:
+        if e["kind"] == "continuing" and e["predecessors"][0] == e["k26"] and e["k26"] in colors["k25"]:
+            assert colors["k26"].get(e["k26"]) == colors["k25"][e["k26"]], e["k26"]
 
 
 def test_label_contrast_aa(colors):
