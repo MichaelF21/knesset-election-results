@@ -39,6 +39,8 @@ interface Props {
   seats22?: Record<string, number> | null;
 }
 
+const SHARE_BAR_PX = 64;
+
 export function PartyTable({ model, data, limit = 12, bars = true, seats = null, seats22 = null }: Props) {
   const [all, setAll] = useState(false);
   const { rows, swing, election } = data;
@@ -70,7 +72,7 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
             <th scope="col">{he.unit.list}</th>
             {seats && <th scope="col" className="num">{he.unit.seats}</th>}
             <th scope="col" className="num col-votes">{he.unit.votes}</th>
-            <th scope="col" className="share-cell">{he.unit.share}</th>
+            <th scope="col" className="num share-cell">{he.unit.share}</th>
             {compare && <th scope="col" className="num">{he.unit.swing}</th>}
           </tr>
         </thead>
@@ -87,16 +89,17 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
                 </td>
               )}
               <td className="num col-votes">{fmtInt(r.votes)}</td>
-              <td className="share-cell">
-                {/* share with a bar beside it, longest for the leading list */}
-                <div className="share-wrap">
-                  <span className="num">{fmtPct(r.share)}</span>
-                  {bars && (
-                    <span className="share-bar" aria-hidden="true">
-                      <span style={{ inlineSize: `${(r.share / max) * 100}%`, background: r.color }} />
-                    </span>
-                  )}
-                </div>
+              <td className="num share-cell">
+                {/* plain text first, so the share shows even if the bar can't be drawn; the bar has a
+                    fixed pixel length (longest for the leading list) and needs no flexbox or % widths */}
+                {fmtPct(r.share)}
+                {bars && (
+                  <span
+                    className="share-bar"
+                    aria-hidden="true"
+                    style={{ width: `${Math.max(2, Math.round((r.share / max) * SHARE_BAR_PX))}px`, background: r.color }}
+                  />
+                )}
               </td>
               {compare && (
                 <td className="num" title={notes[r.letters] ?? undefined}>
@@ -121,11 +124,7 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
                 </td>
               )}
               <td className="num col-votes" />
-              <td className="share-cell">
-                <div className="share-wrap">
-                  <span className="num">{fmtPct(f.share26)}</span>
-                </div>
-              </td>
+              <td className="num share-cell">{fmtPct(f.share26)}</td>
               <td className="num" title={`${name22(model, src)} ${fmtPct(f.share22)} ← ${fmtPct(f.share26)}`}>
                 <SwingValue value={f.swing} />
               </td>

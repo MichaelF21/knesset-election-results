@@ -109,3 +109,17 @@ test('seat chart: pointing at a party highlights its seats', async ({ page }) =>
   await page.mouse.move(5, 5);
   await expect(chart.locator('.seat-total')).toHaveText('120');
 });
+
+for (const width of [1400, 783, 390]) {
+  test(`party tables show vote share, nationally and locally (${width}px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/#v=25&m=winner');
+    const share = page.locator('.party-table').first().locator('tbody td.share-cell');
+    await expect(share.first()).toHaveText('23.4%');
+    await expect(share.first()).toBeVisible();
+    await page.goto('/#v=25&m=winner&s=locality:5000');
+    await page.reload();
+    await expect(page.locator('.unit-title')).toHaveText('תל אביב-יפו');
+    await expect(page.locator('.party-table').first().locator('tbody td.share-cell').first()).toHaveText(/^\d+\.\d%$/);
+  });
+}
