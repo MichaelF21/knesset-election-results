@@ -12,11 +12,13 @@ import { UnitStats } from './UnitStats';
 interface Props {
   model: Model;
   view: View;
+  /** shown above the panel, e.g. that it shows 2022 results while 2026 has none yet */
+  note?: string;
   selection: Selection | null;
   onSelect: (s: Selection | null) => void;
 }
 
-export function SidePanel({ model, view, selection, onSelect }: Props) {
+export function SidePanel({ model, view, note, selection, onSelect }: Props) {
   const sel = selection ?? { level: 'national' as const, id: 'IL' };
   const data = unitRows(model, view, sel.level, sel.id);
   const crumbs = breadcrumbs(model, sel.level, sel.id);
@@ -26,6 +28,7 @@ export function SidePanel({ model, view, selection, onSelect }: Props) {
 
   return (
     <aside className="panel" id="panel" aria-label={he.breadcrumbs}>
+      {note && <p className="panel-note">{note}</p>}
       <nav aria-label={he.breadcrumbs} className="crumbs">
         <ol>
           {crumbs.map((c, i) => (
