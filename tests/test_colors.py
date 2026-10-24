@@ -91,11 +91,11 @@ def test_2022_winners_have_colors(colors):
     assert map_winners_2022() <= set(colors["k25"])
 
 
-def _violations(pal: dict, pairs: dict, default: str) -> list:
+def _violations(pal: dict, pairs: dict, constrained: set) -> list:
     from scripts.tune_colors import MIN_ANY_OK, cvd_de, ok_de, ok_pair
 
     bad = []
-    for a, b in itertools.combinations(pal, 2):
+    for a, b in itertools.combinations([k for k in pal if k in constrained], 2):
         strength = pairs.get(frozenset((a, b)))
         if not ok_pair(pal[a], pal[b], strength):
             bad.append((a, b, round(ok_de(pal[a], pal[b]), 1), round(cvd_de(pal[a], pal[b]), 1),
@@ -108,14 +108,18 @@ def test_2022_neighbors_distinguishable(colors):
     thresholds, normal vision and simulated color blindness (rules in scripts/tune_colors.py)."""
     from scripts.tune_colors import pairs_2022
 
-    bad = _violations(colors["k25"], pairs_2022(), colors["default"])
+    loc, _ = L.load_election(25)
+    votes = {c: int(loc[c].sum()) for c in L.party_columns(loc)}
+    p22 = pairs_2022()
+    constrained = {x for pair in p22 for x in pair} | {k for k, v in votes.items() if v >= 0.01 * sum(votes.values())}
+    bad = _violations(colors["k25"], p22, constrained)
     assert not bad, f"too similar: {bad}"
 
 
 def test_2026_neighbors_distinguishable(colors):
-    from scripts.tune_colors import pairs_2022, pairs_2026
+    from scripts.tune_colors import MAJORS_26, pairs_2022, pairs_2026
 
-    bad = _violations(colors["k26"], pairs_2026(pairs_2022()), colors["default"])
+    bad = _violations(colors["k26"], pairs_2026(pairs_2022()), set(MAJORS_26) | {"ני"})
     assert not bad, f"too similar: {bad}"
 
 

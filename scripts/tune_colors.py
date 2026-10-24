@@ -69,7 +69,24 @@ TARGETS = {
         "ודם": "#01b2ac",  # Joint List
         "די": "#68692c",   # The Reservists
         "ך": "#8f36bf",    # Amcha Yisrael
-        "פה": "#ced4da",   # Ani VeAta (no Wikipedia color)
+        "פה": "#101b68",   # Ani VeAta
+        # smaller lists: colors from the contesting-lists table of Wikipedia's 2026 election article
+        "זך": "#f5c518",   # Haredi Public (yellow)
+        "בקר": "#fff700",  # Dawn's Light
+        "נר": "#000000",   # The Color Black, Guarding the World of Torah
+        "נף": "#000000",   # Shema
+        "צף": "#000000",   # Pirate Party of Israel
+        "ה": "#abec03",    # Garden of Eden
+        "רץ": "#7fd3f3",   # Hakahal
+        "בי": "#0047ab",   # Tzomet – Beit Yisrael
+        "יק": "#2596be",   # The Bible Bloc
+        "קך": "#112de9",   # New Order
+        "צבי": "#1974d2",  # Ahi Movement
+        "זץ": "#12304c",   # Eternal Covenant
+        "נקי": "#e14227",  # Fixing the Electoral and Governing System
+        "בד": "#d01a21",   # Together We Will Succeed
+        # no known color (grey by default): ישראל תחילה, משפט צדק, השותפות לכולם, ביטחון אישי,
+        # תקומה, שרשר, בטח, קול הנשים
     },
 }
 CONTINUING_KEEP = True  # continuing lists reuse their 2022 color
@@ -132,11 +149,11 @@ def variants(target: str):
     L0, a0, b0 = oklab(target)
     C0, H0 = math.hypot(a0, b0), math.atan2(b0, a0)
     out = {}
-    for dL in [i * 0.02 for i in range(-15, 16)]:
+    for dL in [i * 0.02 for i in range(-22, 23)]:
         for kC in (1.0, 0.85, 1.15, 0.7, 1.3):
             for dH in (0, 6, -6, 12, -12, 20, -20):
                 L_ = L0 + dL
-                if not 0.15 <= L_ <= 0.95:
+                if not 0.0 <= L_ <= 0.95:  # dark shades allowed: several lists are black
                     continue
                 h = H0 + math.radians(dH)
                 c = from_oklab(L_, C0 * kC * math.cos(h), C0 * kC * math.sin(h))
@@ -195,20 +212,24 @@ def pairs_2026(p22: dict[frozenset, dict]) -> dict[frozenset, dict]:
     return out
 
 
-def solve(targets: dict[str, str], pairs: dict[frozenset, dict], order: list[str], fixed: dict[str, str]):
+def solve(targets: dict[str, str], pairs: dict[frozenset, dict], order: list[str], fixed: dict[str, str],
+          constrained: set[str]):
+    """Constrained lists (the ones that can win areas on the map) must be told apart; the others keep
+    their real color (they never win an area, their name is always shown next to their color)."""
     chosen = dict(fixed)
     for k in order:
         if k in chosen or k not in targets:
             continue
+        others = [o for o in chosen if o in constrained] if k in constrained else []
         for c in variants(targets[k]):
             if not aa(c):
                 continue
-            if all(ok_pair(c, chosen[o], pairs.get(frozenset((k, o)))) for o in chosen):
+            if all(ok_pair(c, chosen[o], pairs.get(frozenset((k, o)))) for o in others):
                 chosen[k] = c
                 break
         else:
             raise SystemExit(f"no color found for {k}")
-    return chosen
+    return {k: chosen[k] for k in order if k in chosen}
 
 
 def main() -> None:
@@ -221,7 +242,10 @@ def main() -> None:
     votes22 = {c: int(loc[c].sum()) for c in L.party_columns(loc)}
     p22 = pairs_2022()
     order22 = sorted(TARGETS[25], key=lambda k: -votes22.get(k, 0))
-    c22 = solve(TARGETS[25], p22, order22, {})
+    # 2022: lists that won areas on the map, or had at least 1% nationally
+    valid22 = sum(votes22.values())
+    constrained22 = {x for pair in p22 for x in pair} | {k for k, v in votes22.items() if v >= 0.01 * valid22}
+    c22 = solve(TARGETS[25], p22, order22, {}, constrained22)
 
     lineage = P.load_lineage()
     fixed26 = {}
@@ -233,7 +257,7 @@ def main() -> None:
     weight = {e["k26"]: sum(votes22.get(p, 0) for p in (e.get("predecessors") or [e.get("split_from") or ""]))
               for e in lineage.running}
     order26 = sorted(targets26, key=lambda k: -weight.get(k, 0))
-    c26 = solve(targets26, pairs_2026(p22), order26, fixed26)
+    c26 = solve(targets26, pairs_2026(p22), order26, fixed26, set(MAJORS_26) | {"ני"})
 
     for n, chosen, targets in ((25, c22, TARGETS[25]), (26, c26, targets26)):
         print(f"k{n}:")
@@ -241,22 +265,24 @@ def main() -> None:
             moved = delta_e2000(c, targets[k])
             print(f"  {k:4} target {targets[k]} -> {c}" + (f"  (moved ΔE {moved:.1f})" if moved > 1 else ""))
     if args.write:
+        # regenerate both sections (new lists get added); comments are the short display names
         path = ROOT / "data/parties/colors.yaml"
         lines = path.read_text(encoding="utf-8").splitlines()
-        out, section = [], None
+        names = {n: {r["letters"]: r["short_name"] for r in P.read_lists(n)} for n in (25, 26)}
+        out, skip = [], False
         for line in lines:
-            if line.startswith("k25:"):
-                section = 25
-            elif line.startswith("k26:"):
-                section = 26
-            elif line and not line.startswith(" "):
-                section = None
-            m = re.match(r'^  (\S+): "#[0-9a-fA-F]{6}"\s*(?:#\s*(.*))?$', line)
-            if section and m:
-                key, comment = m.group(1), (m.group(2) or "").strip()
-                chosen = c22 if section == 25 else c26
-                if key in chosen:
-                    line = f'  {key}: "{chosen[key]}"' + (f"  # {comment}" if comment else "")
+            m = re.match(r"^k(25|26):$", line)
+            if m:
+                n = int(m.group(1))
+                out.append(line)
+                for key, c in (c22 if n == 25 else c26).items():
+                    name = names[n].get(key, "")
+                    out.append(f'  {key}: "{c}"' + (f"  # {name}" if name else ""))
+                skip = True
+                continue
+            if skip and line.startswith("  "):
+                continue  # the section's old entries
+            skip = False
             out.append(line)
         path.write_text("\n".join(out) + "\n", encoding="utf-8")
         print("updated", path.relative_to(ROOT))

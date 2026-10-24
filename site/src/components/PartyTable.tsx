@@ -70,7 +70,7 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
             <th scope="col">{he.unit.list}</th>
             {seats && <th scope="col" className="num">{he.unit.seats}</th>}
             <th scope="col" className="num col-votes">{he.unit.votes}</th>
-            <th scope="col" className="num">{he.unit.share}</th>
+            <th scope="col" className="share-cell">{he.unit.share}</th>
             {compare && <th scope="col" className="num">{he.unit.swing}</th>}
           </tr>
         </thead>
@@ -79,11 +79,6 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
             <tr key={r.letters}>
               <th scope="row">
                 <BallotChip model={model} election={election} letters={r.letters} size="sm" />
-                {bars && (
-                  <span className="bar" aria-hidden="true">
-                    <span style={{ inlineSize: `${(r.share / max) * 100}%`, background: r.color }} />
-                  </span>
-                )}
                 {compare && notes[r.letters] && <span className="lineage-note">{notes[r.letters]}</span>}
               </th>
               {seats && (
@@ -92,7 +87,17 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
                 </td>
               )}
               <td className="num col-votes">{fmtInt(r.votes)}</td>
-              <td className="num">{fmtPct(r.share)}</td>
+              <td className="share-cell">
+                {/* share with a bar beside it, longest for the leading list */}
+                <div className="share-wrap">
+                  <span className="num">{fmtPct(r.share)}</span>
+                  {bars && (
+                    <span className="share-bar" aria-hidden="true">
+                      <span style={{ inlineSize: `${(r.share / max) * 100}%`, background: r.color }} />
+                    </span>
+                  )}
+                </div>
+              </td>
               {compare && (
                 <td className="num" title={notes[r.letters] ?? undefined}>
                   {/* split lists: the swing is on the family row; new lists: nothing to compare */}
@@ -116,7 +121,11 @@ export function PartyTable({ model, data, limit = 12, bars = true, seats = null,
                 </td>
               )}
               <td className="num col-votes" />
-              <td className="num">{fmtPct(f.share26)}</td>
+              <td className="share-cell">
+                <div className="share-wrap">
+                  <span className="num">{fmtPct(f.share26)}</span>
+                </div>
+              </td>
               <td className="num" title={`${name22(model, src)} ${fmtPct(f.share22)} ← ${fmtPct(f.share26)}`}>
                 <SwingValue value={f.swing} />
               </td>
