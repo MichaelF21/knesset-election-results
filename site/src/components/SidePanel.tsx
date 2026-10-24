@@ -116,7 +116,13 @@ function National({ model, view }: { model: Model; view: View }) {
   const seats = nationalSeats(model, e) ?? {};
   return (
     <>
-      <SeatChart model={model} election={e} seats={seats} caption={partial ? he.summary.seatsProjected : he.summary.seats} />
+      <SeatChart
+        model={model}
+        election={e}
+        seats={seats}
+        shares={Object.fromEntries(Object.entries(r.national.votes).map(([k, v]) => [k, (v / r.national.valid) * 100]))}
+        caption={partial ? he.summary.seatsProjected : he.summary.seats}
+      />
       {e === '26' && withdrawnLists(model).length > 0 && (
         <section className="withdrawn" aria-labelledby="withdrawn-h">
           <h3 id="withdrawn-h">{he.summary.withdrawn}</h3>

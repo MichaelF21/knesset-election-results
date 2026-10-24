@@ -1,4 +1,5 @@
 import { he } from '../i18n/he';
+import { fmtPct } from '../lib/format';
 import { party, results, type Model } from '../lib/model';
 import { SWING_STOPS, swingColor, TURNOUT_RANGE, turnoutColor } from '../lib/scales';
 import type { Theme } from '../lib/theme';
@@ -73,10 +74,13 @@ function WinnerLegend({ model, e }: { model: Model; e: '25' | '26' }) {
           <li key={l}>
             <span className="swatch" style={{ background: party(model, e, l)?.color ?? model.parties.default_color }} aria-hidden="true" />
             {party(model, e, l)?.short_name ?? l}
+            <span className="legend-share">{fmtPct(((r.national.votes[l] ?? 0) / r.national.valid) * 100)}</span>
           </li>
         ))}
       </ul>
-      <div className="legend-note">{he.legend.winnerOpacity}</div>
+      <div className="legend-note">
+        {he.legend.nationalShare} · {he.legend.winnerOpacity}
+      </div>
     </div>
   );
 }

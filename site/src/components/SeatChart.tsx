@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { he } from '../i18n/he';
+import { fmtPct } from '../lib/format';
 import { party, type Model } from '../lib/model';
 import type { ElectionKey } from '../lib/types';
 
@@ -7,7 +8,22 @@ import type { ElectionKey } from '../lib/types';
  * Half-circle parliament chart: 120 seats in rows, parties ordered by bloc then size.
  * Pointing at a seat or a legend entry (or focusing / tapping it) highlights that party's seats.
  */
-export function SeatChart({ model, election, seats, caption, empty = false }: { model: Model; election: ElectionKey; seats: Record<string, number>; caption: string; empty?: boolean }) {
+export function SeatChart({
+  model,
+  election,
+  seats,
+  caption,
+  empty = false,
+  shares = {},
+}: {
+  model: Model;
+  election: ElectionKey;
+  seats: Record<string, number>;
+  caption: string;
+  empty?: boolean;
+  /** national vote share (%) per list, shown with the seats */
+  shares?: Record<string, number>;
+}) {
   const [active, setActive] = useState<string | null>(null);
   const order = model.blocs.order;
   const list = Object.entries(seats)
@@ -59,7 +75,9 @@ export function SeatChart({ model, election, seats, caption, empty = false }: { 
               onMouseEnter={point(letters)}
               onClick={point(letters === active ? null : letters)}
             >
-              <title>{letters ? `${party(model, election, letters)?.short_name ?? letters}` : ''}</title>
+              <title>
+                {letters ? `${party(model, election, letters)?.short_name ?? letters} · ${fmtPct(shares[letters])}` : ''}
+              </title>
             </circle>
           );
         })}
@@ -72,7 +90,7 @@ export function SeatChart({ model, election, seats, caption, empty = false }: { 
           {current ? (
             <>
               <span className="dot" style={{ background: current.p?.color }} aria-hidden="true" />
-              {he.summary.seatHover(current.p?.short_name ?? current.letters, current.n)}
+              {he.summary.seatHover(current.p?.short_name ?? current.letters, current.n, fmtPct(shares[current.letters]))}
             </>
           ) : (
             <span className="muted">{he.summary.seatHint}</span>
@@ -94,6 +112,7 @@ export function SeatChart({ model, election, seats, caption, empty = false }: { 
               <span className="dot" style={{ background: x.p?.color }} aria-hidden="true" />
               <span>{x.p?.short_name ?? x.letters}</span>
               <strong>{x.n}</strong>
+              {shares[x.letters] !== undefined && <span className="seat-share">{fmtPct(shares[x.letters])}</span>}
             </button>
           </li>
         ))}

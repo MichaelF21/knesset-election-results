@@ -96,13 +96,16 @@ test('seat chart: pointing at a party highlights its seats', async ({ page }) =>
   const chart = page.locator('.seat-chart');
   await expect(chart.locator('.seat-active')).toHaveText('הצביעו על מושב או על שם רשימה');
   await chart.getByRole('button', { name: /הליכוד/ }).hover();
-  await expect(chart.locator('.seat-active')).toHaveText('הליכוד: 32 מנדטים');
+  await expect(chart.locator('.seat-active')).toHaveText('הליכוד: 32 מנדטים · 23.4% מהקולות');
+  // vote shares are shown next to the seats in the legend, and in the map legend
+  await expect(chart.getByRole('button', { name: /יש עתיד/ })).toContainText('17.8%');
+  await expect(page.locator('.legend-parties li', { hasText: 'הליכוד' })).toContainText('23.4%');
   await expect(chart.locator('.seat-total')).toHaveText('32');
   await expect(chart.locator('.seat-dot.on')).toHaveCount(32);
   await expect(chart).toHaveClass(/has-active/);
   // pointing at a seat works too
   await chart.locator('.seat-dot').last().hover();
-  await expect(chart.locator('.seat-active')).not.toHaveText('הליכוד: 32 מנדטים');
+  await expect(chart.locator('.seat-active')).not.toContainText('הליכוד');
   await page.mouse.move(5, 5);
   await expect(chart.locator('.seat-total')).toHaveText('120');
 });
