@@ -19,6 +19,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 import zipfile
 from pathlib import Path
 
@@ -82,10 +83,25 @@ def fetch_govmap(election: int, force: bool = False) -> bool:
     if str(election) not in idx.get("elections", {}):
         print(f"  GovMap has no neighborhood data for election {election} yet")
         return False
+    path = idx["elections"][str(election)]["path"]
+    # Listed is not published: until the data exists GovMap serves its web page (HTML) at these
+    # addresses. Download to a temporary name and keep only valid JSON with features.
+    fetched = {}
+    for f in GOVMAP_FILES:
+        r = requests.get(f"{GOVMAP}/{path}/{f}", headers={"User-Agent": UA}, timeout=120,
+                         params={"t": int(time.time())})
+        try:
+            data = r.json() if r.ok else None
+        except ValueError:
+            data = None
+        if not data or not (data.get("features") or data.get("objects")):
+            print(f"  GovMap lists election {election} but {f} is not published yet")
+            return False
+        fetched[f] = r.content
     d.mkdir(parents=True, exist_ok=True)
     (d.parent / "elections.json").write_text(json.dumps(idx, ensure_ascii=False, indent=1), encoding="utf-8")
-    for f in GOVMAP_FILES:
-        download(f"{GOVMAP}/{idx['elections'][str(election)]['path']}/{f}", d / f)
+    for f, content in fetched.items():
+        (d / f).write_bytes(content)
     return True
 
 

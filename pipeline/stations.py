@@ -31,7 +31,12 @@ def govmap_areas(election: int, mock: bool = False) -> dict | None:
     data_path = d / "neighborhood_data.json"
     if not data_path.exists():
         return None
-    data = json.loads(data_path.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(data_path.read_text(encoding="utf-8"))
+    except ValueError:  # e.g. a web page saved before GovMap published the data
+        return None
+    if not data.get("features"):
+        return None
     return {"parties": data["parties"], "features": data["features"], "totals": data.get("totals", {})}
 
 

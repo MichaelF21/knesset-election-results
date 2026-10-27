@@ -54,6 +54,9 @@ def download(url_base: str) -> dict[str, bytes] | None:
         if r.status_code == 404:
             return None
         r.raise_for_status()
+        # before publication the committee serves an HTML "page not found" with status 200
+        if r.content.lstrip()[:15].lower().startswith((b"<!doctype", b"<html")):
+            return None
         if b"," not in r.content[:300] or len(r.content) < 200:
             raise ingest.IngestError(f"{name} does not look like the committee CSV ({r.content[:60]!r})")
         out[name] = r.content
