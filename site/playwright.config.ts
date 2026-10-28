@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-// Two dev servers: the real data (2026 not yet published) and MOCK=1 (synthetic 2026 results from
+// Two dev servers: the real data (whatever is published; tests of the pre-results state fake an
+// unpublished 2026 in meta.json) and MOCK=1 (synthetic 2026 results from
 // scripts/mock_k26.py; run `MOCK=1 python scripts/mock_k26.py` first).
 export default defineConfig({
   testDir: './e2e',

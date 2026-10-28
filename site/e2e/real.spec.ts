@@ -1,6 +1,17 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-test('2022 results load and 2026 shows the not-published state', async ({ page }) => {
+/** The site as it was before the committee published 2026 results: meta.json says so. */
+async function before2026(page: Page) {
+  await page.route('**/data/meta.json*', async (route) => {
+    const res = await route.fetch();
+    const meta = await res.json();
+    meta.elections['26'] = { ...meta.elections['26'], status: 'not_published' };
+    await route.fulfill({ response: res, json: meta });
+  });
+}
+
+test('before 2026 results: 2022 results load and 2026 shows the not-published state', async ({ page }) => {
+  await before2026(page);
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('תוצאות הבחירות לכנסת ה-26 בהשוואה לכנסת ה-25');
@@ -27,7 +38,8 @@ test('2022 results load and 2026 shows the not-published state', async ({ page }
   await expect(page.locator('.chip')).toHaveText('טרם פורסמו תוצאות');
 });
 
-test('a shared comparison link opens on the notice', async ({ page }) => {
+test('before 2026 results: a shared comparison link opens on the notice', async ({ page }) => {
+  await before2026(page);
   await page.goto('/#v=compare&m=partySwing&p=%D7%9E%D7%97%D7%9C');
   await expect(page.getByRole('heading', { name: 'טרם פורסמו תוצאות' })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'השוואה' })).toHaveAttribute('aria-checked', 'true');
@@ -55,7 +67,7 @@ test('dark mode toggle applies and persists', async ({ page }) => {
 });
 
 test('national party table shows seats next to each party', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#v=25');
   const table = page.locator('.party-table').first();
   await expect(table.locator('thead')).toContainText('מנדטים');
   await expect(table.locator('tr', { hasText: 'הליכוד' }).locator('.seats')).toHaveText('32');
@@ -64,7 +76,8 @@ test('national party table shows seats next to each party', async ({ page }) => 
   await expect(table.locator('tr', { hasText: 'מרצ' }).locator('td').first()).toHaveText('—');
 });
 
-test('2026 tab: no results yet, the panel lists the running lists', async ({ page }) => {
+test('before 2026 results: the 2026 tab lists the running lists', async ({ page }) => {
+  await before2026(page);
   await page.goto('/#v=26');
   const panel = page.locator('.panel');
   // no 2022 numbers in the 2026 tab
@@ -91,8 +104,23 @@ test('2026 tab: no results yet, the panel lists the running lists', async ({ pag
   await expect(page.locator('.legend')).toContainText('טרם פורסמו תוצאות');
 });
 
-test('seat chart: pointing at a party highlights its seats', async ({ page }) => {
+test('2026 results: the site opens on the comparison, with the count and 120 seats', async ({ page, request }) => {
+  const status = (await (await request.get('/data/meta.json')).json()).elections['26'].status;
+  test.skip(status === 'not_published', '2026 results are not published yet');
   await page.goto('/');
+  await expect(page.getByRole('radio', { name: 'השוואה' })).toHaveAttribute('aria-checked', 'true');
+  // the loop may publish a new count during the test: match the form, not the number
+  await expect(page.locator('.chip')).toHaveText(status === 'final' ? 'סופי' : /^נספרו [\d.]+% מהקולות · עודכן /);
+  await expect(page.getByRole('radio', { name: 'תנודה למפלגה' })).toBeEnabled();
+  const chart = page.locator('.seat-chart');
+  await expect(chart.locator('.seat-total')).toHaveText('120');
+  await expect(chart.locator('figcaption')).toHaveText(status === 'final' ? 'חלוקת המנדטים' : 'חלוקת מנדטים לפי הקולות שנספרו');
+  // the national table compares with 2022: Likud's row has a swing figure
+  await expect(page.locator('.party-table').first().locator('tr', { hasText: 'הליכוד' })).toContainText(/[−+-]\d+\.\d/);
+});
+
+test('seat chart: pointing at a party highlights its seats', async ({ page }) => {
+  await page.goto('/#v=25');
   const chart = page.locator('.seat-chart');
   await expect(chart.locator('.seat-active')).toHaveText('הצביעו על מושב או על שם רשימה');
   await chart.getByRole('button', { name: /הליכוד/ }).hover();
