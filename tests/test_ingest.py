@@ -109,7 +109,8 @@ def test_partial_files_with_only_counted_rows(out, tmp_path):
     res = json.loads((out / "results/k26/localities.json").read_text(encoding="utf-8"))
     assert len(res) == 1215 and sum(not u["counted"] for u in res.values()) > 0
     e = json.loads((out / "meta.json").read_text(encoding="utf-8"))["elections"]["26"]
-    assert 35 < e["counted_pct"] < 50 and e["counted_source"] == "files"
+    # against the committee's published eligible total (k26_election.yaml) when known
+    assert 35 < e["counted_pct"] < 50 and e["counted_source"] in ("files", "eligible")
 
 
 def test_partial_station_mismatch_warns_final_fails(out, tmp_path):

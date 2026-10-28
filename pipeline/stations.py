@@ -40,6 +40,18 @@ def govmap_areas(election: int, mock: bool = False) -> dict | None:
     return {"parties": data["parties"], "features": data["features"], "totals": data.get("totals", {})}
 
 
+def same_area_layer(election: int) -> bool:
+    """True when GovMap's neighborhood polygons for `election` are the 2022 ones (same ids)."""
+    def ids(n):
+        path = govmap_dir(n) / "neighborhood_geometry.topojson"
+        if not path.exists():
+            return None
+        topo = json.loads(path.read_text(encoding="utf-8"))
+        obj = next(iter(topo["objects"].values()))
+        return [(g["properties"].get("id"), g["properties"].get("UNIQ_ID")) for g in obj["geometries"]]
+    return ids(election) is not None and ids(election) == ids(25)
+
+
 def area_meta() -> dict[str, dict]:
     """Area id → {'name', 'city'} from the GovMap neighborhood geometry (identical across elections)."""
     topo = json.loads((govmap_dir(25) / "neighborhood_geometry.topojson").read_text(encoding="utf-8"))

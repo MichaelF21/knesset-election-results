@@ -1,0 +1,5 @@
+# Facts about the 26th Knesset election used by the ingest.
+# Total eligible voters, from the committee's results page (votes26.bechirot.gov.il,
+# "מספר בעלי זכות בחירה", 28.10.2026 07:26). Used for the counted share when the
+# source has no reliable stations-counted total.
+eligible_total: 7331981

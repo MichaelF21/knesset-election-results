@@ -95,17 +95,30 @@ def validate(election: int, loc, st, table, final: bool = True) -> list[str]:
     return warnings
 
 
-def counted_share(loc, st, govmap: dict | None, prev_eligible: int) -> tuple[float, str]:
+def election_facts(election: int) -> dict:
+    """data/parties/k{N}_election.yaml (e.g. the committee's published eligible total)."""
+    path = L.DATA / "parties" / f"k{election}_election.yaml"
+    if not path.exists():
+        return {}
+    import yaml
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def counted_share(loc, st, govmap: dict | None, prev_eligible: int,
+                  eligible_total: int | None = None) -> tuple[float, str]:
     """Percent counted, and where the figure came from.
 
-    GovMap publishes the committee's own "stations counted" totals; use them when present. Otherwise
-    use the share of eligible voters whose stations reported. If the files list only counted stations,
-    their eligible total is too small, so the previous election's eligible total is the floor.
+    GovMap's "stations counted" totals are used when they say something (counted < listed; on the
+    night GovMap lists only the stations it has, so both numbers are equal). Otherwise: the share of
+    eligible voters whose stations reported, against the committee's published eligible total when
+    known, else against the larger of the files' total and the previous election's total.
     """
     t = (govmap or {}).get("totals") or {}
-    if t.get("kalpi"):
+    if t.get("kalpi") and t.get("kalpi_counted", 0) < t["kalpi"]:
         return float(t.get("kalpi_counted", 0) / t["kalpi"] * 100), "govmap"
     df = st if st is not None and len(st) else loc
+    if eligible_total:
+        return float(df.loc[df[L.VOTERS] > 0, L.ELIGIBLE].sum() / eligible_total * 100), "eligible"
     total = max(int(df[L.ELIGIBLE].sum()), int(loc[L.ELIGIBLE].sum()), prev_eligible)
     if not total:
         return 0.0, "files"
@@ -158,12 +171,17 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
         except Exception as e:  # GovMap down must not block election night
             warnings.append(f"GovMap neighborhood fetch failed: {e}")
     gm = S.govmap_areas(election, mock=mock)
+    if gm and not mock and not S.same_area_layer(election):
+        # neighborhood swing needs both elections in the same polygons; GovMap redrew the layer
+        warnings.append("GovMap's neighborhood layer differs from 2022's: neighborhoods skipped")
+        gm = None
     if gm:
         areas = A.areas_from_govmap(gm, S.area_meta())
 
     seats = allocate(nat["votes"], P.load_surplus(election))
     prev_eligible = int(prev[L.ELIGIBLE].sum()) if prev is not None else 0
-    pct, pct_source = (100.0, "final") if is_final else counted_share(loc, st, gm, prev_eligible)
+    pct, pct_source = (100.0, "final") if is_final else counted_share(loc, st, gm, prev_eligible,
+                                                                       election_facts(election).get("eligible_total"))
     pct = round(pct, 1)
 
     d = out / "results" / f"k{election}"

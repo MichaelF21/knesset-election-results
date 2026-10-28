@@ -112,7 +112,37 @@ def publish(summary: str) -> None:
     log("pushed: the site redeploys in about a minute")
 
 
+def cycle_govmap(args, state: dict) -> None:
+    """GovMap source: the committee's per-locality results as open JSON (scripts/govmap_k26.py)."""
+    from scripts import govmap_k26 as G
+
+    try:
+        data = G.fetch_localities(ELECTION)
+    except G.NotPublished as e:
+        log(str(e))
+        return
+    final = args.final or FINAL_FLAG.exists()
+    fp = f"{data.get('generated')}|{len(data['features'])}|{final}"
+    if fp == state.get("fp"):
+        log(f"no change (GovMap data of {data.get('generated')})")
+        return
+    info = G.write_locality_csv(data)
+    t0 = time.time()
+    r = ingest.run(ELECTION, G.OUT, None, final=final, fetch_areas=True)
+    summary = sanity_check(E.PUBLIC)
+    for w in r["warnings"]:
+        log(f"warning: {w}")
+    log(f"ingested GovMap data of {info['generated']} in {time.time() - t0:.1f}s: {summary}")
+    if args.push:
+        publish(summary)
+    state["fp"] = fp
+    if final:
+        state["done"] = True
+
+
 def cycle(args, state: dict, mock: bool) -> None:
+    if args.source == "govmap" and not mock:
+        return cycle_govmap(args, state)
     files = download(args.url_base)
     if files is None:
         log("committee files not published yet")
@@ -145,6 +175,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--interval", type=int, default=120, help="seconds between checks (default 120)")
     ap.add_argument("--url-base", default=ingest.DEFAULT_URL_BASE, help="committee files URL")
+    ap.add_argument("--source", choices=("govmap", "committee"), default="govmap",
+                    help="govmap (default): GovMap's per-locality JSON; committee: the committee's CSV files "
+                         "(blocked for automated clients on election night 2026)")
     ap.add_argument("--final", action="store_true", help="mark results final, publish once and stop")
     ap.add_argument("--no-push", dest="push", action="store_false", help="don't commit or push")
     ap.add_argument("--once", action="store_true", help="run one cycle and exit")
@@ -160,7 +193,8 @@ def main() -> None:
         if git("status", "--porcelain", "--untracked-files=no").strip():
             sys.exit("uncommitted changes in the repo: commit or stash them first")
         git("pull", "--ff-only")
-    log(f"polling {args.url_base} every {args.interval}s{' (no push)' if not args.push else ''}")
+    where = "GovMap election data" if args.source == "govmap" and not mock else args.url_base
+    log(f"polling {where} every {args.interval}s{' (no push)' if not args.push else ''}")
 
     state: dict = {}
     failures = 0
