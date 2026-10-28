@@ -24,7 +24,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main # when called after an ingest commit, build the new commit
-      - uses: actions/setup-python@v5
+      # live election-night updates (commit message "Live update …") skip the Python steps: the
+      # pip cache's post step fails when nothing was installed
+      - if: ${{ !startsWith(github.event.head_commit.message, 'Live update') }}
+        uses: actions/setup-python@v5
         with:
           python-version: '3.13'
           cache: pip
