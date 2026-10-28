@@ -119,6 +119,10 @@ def build() -> dict:
     loc, _ = L.load_election(25)
     valid = loc.set_index(L.CODE)[L.VALID]
     codes = set(valid.index) - {L.EXTERNAL_CODE}
+    # localities that report only in 2026 (new ones, or ones with no 2022 votes) need a shape too
+    k26 = L.DATA / "raw" / "k26" / "expc.csv"
+    if k26.exists():
+        codes |= set(L.load_localities(k26, 26)[L.CODE]) - {L.EXTERNAL_CODE}
     layers = G.build_layers(codes, valid)
     table = layers["table"]
 
@@ -179,14 +183,39 @@ def dots(layers: dict, table) -> list[dict]:
     return out
 
 
-def build_areas(valid, table) -> list[dict]:
-    """Neighborhood polygons from GovMap, split per city, for cities with good placement."""
-    src = G.govmap_dir(25) / "neighborhood_geometry.topojson"
-    data = json.loads((G.govmap_dir(25) / "neighborhood_data.json").read_text(encoding="utf-8"))
+def neighborhood_layer() -> dict:
+    """GovMap's neighborhood polygons of every election, as one GeoJSON layer (EPSG:4326).
+
+    GovMap draws only neighborhoods that had polling stations in that election, so each election's
+    layer has polygons the other lacks (2026: 2,175 shared with 2022, 260 new; 123 of 2022's gone).
+    Shared polygons keep the same id and geometry, so the union is one consistent layer: the 2022
+    polygons plus each later election's new ids. Swing exists where both elections have results.
+    """
+    merged = None
+    seen: set[str] = set()
+    for n in G.govmap_elections():
+        out = BUILD / f"neighborhoods_{n}.geojson"
+        mapshaper(str(G.govmap_dir(n) / "neighborhood_geometry.topojson"), "-proj", "wgs84", "init=EPSG:3857",
+                  "-o", str(out), "format=geojson", "precision=0.00001")
+        fc = json.loads(out.read_text(encoding="utf-8"))
+        new = [f for f in fc["features"] if str(f["properties"]["id"]) not in seen]
+        seen |= {str(f["properties"]["id"]) for f in new}
+        if merged is None:
+            merged = fc
+        else:
+            merged["features"] += new
+            print(f"  GovMap {n}: {len(new)} neighborhoods not in earlier layers")
+    raw = BUILD / "neighborhoods_all.geojson"
+    raw.write_text(json.dumps(merged, ensure_ascii=False), encoding="utf-8")
     geo = BUILD / "neighborhoods.geojson"
-    mapshaper(str(src), "-proj", "wgs84", "init=EPSG:3857", "-clean",
-              "-o", str(geo), "format=geojson", "precision=0.00001")
-    fc = json.loads(geo.read_text(encoding="utf-8"))
+    mapshaper(str(raw), "-clean", "-o", str(geo), "format=geojson", "precision=0.00001")
+    return json.loads(geo.read_text(encoding="utf-8"))
+
+
+def build_areas(valid, table) -> list[dict]:
+    """Neighborhood polygons from GovMap, split per city, for cities with good placement (2022 votes)."""
+    data = json.loads((G.govmap_dir(25) / "neighborhood_data.json").read_text(encoding="utf-8"))
+    fc = neighborhood_layer()
     by_city: dict[int, list] = {}
     for f in fc["features"]:
         p = f["properties"]

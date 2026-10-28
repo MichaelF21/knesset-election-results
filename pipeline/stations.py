@@ -40,25 +40,16 @@ def govmap_areas(election: int, mock: bool = False) -> dict | None:
     return {"parties": data["parties"], "features": data["features"], "totals": data.get("totals", {})}
 
 
-def same_area_layer(election: int) -> bool:
-    """True when GovMap's neighborhood polygons for `election` are the 2022 ones (same ids)."""
-    def ids(n):
-        path = govmap_dir(n) / "neighborhood_geometry.topojson"
-        if not path.exists():
-            return None
-        topo = json.loads(path.read_text(encoding="utf-8"))
-        obj = next(iter(topo["objects"].values()))
-        return [(g["properties"].get("id"), g["properties"].get("UNIQ_ID")) for g in obj["geometries"]]
-    return ids(election) is not None and ids(election) == ids(25)
-
-
 def area_meta() -> dict[str, dict]:
-    """Area id → {'name', 'city'} from the GovMap neighborhood geometry (identical across elections)."""
-    topo = json.loads((govmap_dir(25) / "neighborhood_geometry.topojson").read_text(encoding="utf-8"))
+    """Area id → {'name', 'city'} from GovMap's neighborhood layers of every election (shared ids are
+    the same polygon in each, see scripts/fetch_geo.py neighborhood_layer)."""
+    from .geo import govmap_elections
     out = {}
-    for g in topo["objects"]["neighborhood"]["geometries"]:
-        p = g["properties"]
-        out[str(p["id"])] = {"name": p.get("neighborhood_name") or "", "city": int(p["SETL_CODE"])}
+    for n in govmap_elections():
+        topo = json.loads((govmap_dir(n) / "neighborhood_geometry.topojson").read_text(encoding="utf-8"))
+        for g in next(iter(topo["objects"].values()))["geometries"]:
+            p = g["properties"]
+            out.setdefault(str(p["id"]), {"name": p.get("neighborhood_name") or "", "city": int(p["SETL_CODE"])})
     return out
 
 

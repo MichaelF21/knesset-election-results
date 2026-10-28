@@ -95,6 +95,16 @@ def validate(election: int, loc, st, table, final: bool = True) -> list[str]:
     return warnings
 
 
+def unmapped_areas(areas: dict) -> list[str]:
+    """Neighborhoods with votes, in a city that has a neighborhood map, but missing from that map."""
+    geo = E.PUBLIC / "geo" / "areas"
+    index = E.read_json(geo / "index.json") or {}
+    shown: set[str] = set()
+    for city in index:
+        shown |= {f["properties"]["id"] for f in E.read_json(geo / f"{city}.json")["features"]}
+    return sorted(aid for aid, u in areas.items() if u["valid"] and u["parent"] in index and aid not in shown)
+
+
 def election_facts(election: int) -> dict:
     """data/parties/k{N}_election.yaml (e.g. the committee's published eligible total)."""
     path = L.DATA / "parties" / f"k{election}_election.yaml"
@@ -171,12 +181,13 @@ def run(election: int, locality_csv=None, stations_csv=None, final: bool | None 
         except Exception as e:  # GovMap down must not block election night
             warnings.append(f"GovMap neighborhood fetch failed: {e}")
     gm = S.govmap_areas(election, mock=mock)
-    if gm and not mock and not S.same_area_layer(election):
-        # neighborhood swing needs both elections in the same polygons; GovMap redrew the layer
-        warnings.append("GovMap's neighborhood layer differs from 2022's: neighborhoods skipped")
-        gm = None
     if gm:
         areas = A.areas_from_govmap(gm, S.area_meta())
+        if not mock:
+            unmapped = unmapped_areas(areas)
+            if unmapped:
+                warnings.append(f"{len(unmapped)} neighborhoods with results have no polygon on the map (new in "
+                                f"GovMap's layer: python scripts/fetch_geo.py --build): {unmapped[:10]}")
 
     seats = allocate(nat["votes"], P.load_surplus(election))
     prev_eligible = int(prev[L.ELIGIBLE].sum()) if prev is not None else 0

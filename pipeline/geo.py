@@ -11,6 +11,7 @@ Every layer is ITM (EPSG:2039) except the GovMap neighborhood layer (EPSG:3857);
 from __future__ import annotations
 
 import glob
+import json
 import re
 from pathlib import Path
 
@@ -77,13 +78,15 @@ def build_locality_table() -> pd.DataFrame:
             "x": xy[0] if xy else None, "y": xy[1] if xy else None,
         })
     to_itm = Transformer.from_crs(WGS84, ITM, always_xy=True)
+    council_names = {r["muni_id"]: r["muni_name"] for r in rows if r["muni_kind"] == "regional"}
     for code, e in (overrides().get("extra_localities") or {}).items():
         x, y = to_itm.transform(e["lon"], e["lat"])
         council = e.get("council")
+        muni_id = f"rc{council}" if council else f"l{code}"
         rows.append({
-            "code": int(code), "name": e["name"],
-            "muni_id": f"rc{council}" if council else f"l{code}",
-            "muni_name": e["name"], "muni_kind": "regional" if council else "none", "x": x, "y": y,
+            "code": int(code), "name": e["name"], "muni_id": muni_id,
+            "muni_name": council_names.get(muni_id, e["name"]), "muni_kind": "regional" if council else "none",
+            "x": x, "y": y,
         })
     df = pd.DataFrame(rows).drop_duplicates("code", keep="last").sort_values("code")
     df.to_csv(LOCALITIES_CSV, index=False, encoding="utf-8")
@@ -200,3 +203,18 @@ def build_layers(result_codes: set[int], valid_by_code: pd.Series) -> dict:
 
 def govmap_dir(election: int) -> Path:
     return DATA / "raw" / "govmap" / str(election)
+
+
+def govmap_elections(first: int = 25) -> list[int]:
+    """Elections from `first` (the site compares 25 and 26) with a GovMap neighborhood layer on disk."""
+    out = []
+    for d in sorted((DATA / "raw" / "govmap").glob("[0-9]*"), key=lambda p: int(p.name)):
+        if int(d.name) < first:
+            continue
+        try:
+            topo = json.loads((d / "neighborhood_geometry.topojson").read_text(encoding="utf-8"))
+        except (OSError, ValueError):  # missing, or a web page saved before GovMap published it
+            continue
+        if topo.get("objects"):
+            out.append(int(d.name))
+    return out

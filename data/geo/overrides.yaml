@@ -15,3 +15,20 @@ extra_localities:
     lat: 31.5247
     lon: 35.1105
     council: null   # not in the CBS file at all; no regional council, shown as its own unit
+  # New in 2026 (recognised after the CBS 2023 file). Location: centre of the locality's polygon in
+  # GovMap's 2026 neighborhood layer.
+  3861:
+    name: עשהאל
+    lat: 31.3734
+    lon: 35.0434
+    council: 78   # מועצה אזורית הר חברון
+  3864:
+    name: בית חוגלה
+    lat: 31.8219
+    lon: 35.5072
+    council: 74   # מועצה אזורית מגילות ים המלח
+  3869:
+    name: אביגיל
+    lat: 31.4029
+    lon: 35.141
+    council: 78   # מועצה אזורית הר חברון
